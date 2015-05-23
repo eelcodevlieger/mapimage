@@ -1,0 +1,20 @@
+// http://en.wikipedia.org/wiki/Wikipedia:Index_of_United_Kingdom_political_parties_meta_attributes
+{
+	'CON':		'#0087DC',
+	'LAB':		'#DC241f',
+	'SNP':		'#FFFF00',
+	'LD':		'#FDBB30',
+	'GREEN':	'#6AB023',
+	'UKIP':		'#70147A',
+	'PC':		'#008142', // Plaid Cymru
+	'SF':		'#008800', // Sinn Fein
+	'DUP':		'#D46A4C', // Democratic Unionist Party
+	'UUP':		'#9999FF', // Ulster Unionist Party
+	'SDLP':		'#99FF66', // Social Democratic and Labour Party
+	'TUSC':		'#EC008C', // Trade Unionist and Socialist Coalition
+	'BNP':		'#00008B', // British National Party
+	'CPA':		'#AA00AA', // Christian Peoples Alliance
+	'CSA':		'#F84651', // Cannabis is Safer than Alcohol
+	'Eng Dem':	'#915F6D', // English Democrats
+	'IND':		'#DDDDDD'
+}
