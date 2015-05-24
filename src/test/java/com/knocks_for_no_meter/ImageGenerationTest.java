@@ -65,7 +65,7 @@ public class ImageGenerationTest {
 	}
 	
 	@Test
-	public void testGenerateImage() {
+	public void testGenerateImagePixelPercentageAccurate() {
 		imageGenerator.generate(raster);
 
 		int width = raster.getWidth();
