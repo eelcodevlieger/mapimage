@@ -8,10 +8,12 @@ public class ConstituencyMapping implements ConstituencyKeyGenerator{
 
 	private final String[] prefixes;
 	private final Map<String, String> constituencyNameMapping;
+	private final Map<String, String> seatNumberToConstituencyNameMapping;
 
-	public ConstituencyMapping(String[] prefixes, Map<String, String> constituencyNameMapping) {
+	public ConstituencyMapping(String[] prefixes, Map<String, String> constituencyNameMapping, Map<String, String> seatNumberToConstituencyNameMapping) {
 		this.prefixes = prefixes;
 		this.constituencyNameMapping = constituencyNameMapping;
+		this.seatNumberToConstituencyNameMapping = seatNumberToConstituencyNameMapping;
 	}
 	
 	/**
@@ -20,6 +22,10 @@ public class ConstituencyMapping implements ConstituencyKeyGenerator{
 	 * {@link #constituencyNameMapping} allows for manual key overrides loaded from the {@value #CONSTITUENCY_NAME_MAPPING_FILE} config file
 	 */
 	public String toKey(String constituencyName) {
+		// 2005 data mapping
+		if( constituencyName.startsWith("seat-") )
+			constituencyName = convertSeatNumberToConstituencyName(constituencyName);
+		
 		// remove all non-word characters and UPPER CASE the result
 		constituencyName = constituencyName.replaceAll("&", "AND").replaceAll("\\W", "").replaceAll("_", "").toUpperCase();
 		
@@ -36,5 +42,10 @@ public class ConstituencyMapping implements ConstituencyKeyGenerator{
 		String keyMappingOverride = constituencyNameMapping.get(constituencyName);
 		
 		return keyMappingOverride != null ? keyMappingOverride : constituencyName;
+	}
+
+	private String convertSeatNumberToConstituencyName(String seatNumber) {
+		String constituencyName = seatNumberToConstituencyNameMapping.get(seatNumber);
+		return constituencyName != null ? constituencyName : seatNumber;
 	}
 }

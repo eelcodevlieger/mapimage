@@ -17,6 +17,8 @@ import com.knocksfornometer.mapimage.Candidate;
 import com.knocksfornometer.mapimage.Candidates;
 
 /**
+ * Process Excel data from the Electoral Commission
+ * http://www.electoralcommission.org.uk/our-work/our-research/electoral-data
  * 
  * @author Eelco de Vlieger
  */
@@ -98,7 +100,7 @@ public class ElectoralCommissionElectionData {
 	    	if(turnout < 0.1d)
 	    		throw new IllegalStateException("Turnout percentage invalid [turnout=" + turnout + "]");
 	    	
-			candidates.add( new Candidate(partyColorMapping, partyCode, (int)(voteShare / 100 * turnout) ));
+			candidates.add( new Candidate(partyColorMapping, partyCode, (int)(voteShare / 100 * turnout) ) );
 	    }
 	    
 	    return electionDataMap;

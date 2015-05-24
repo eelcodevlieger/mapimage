@@ -66,7 +66,6 @@ public class Main {
 	private static final int NUM_IMAGE_GENERATION_THREADS = 10;
 
 	private static final File RESOURCES_DIRECTORY = new File("src\\main\\resources");
-	private static final String SVG_MAP_INPUT_FILE = "2015UKElectionMap.svg";
 	private static final String TARGET_OUTPUT_IMAGE_FORMAT = "png";
 	private static final String TARGET_OUTPUT_BASE_DIR = "target\\map\\";
 	private static final String TARGET_OUTPUT_IMAGE_DIR = "\\constituencies\\";
@@ -78,7 +77,7 @@ public class Main {
 	 * If true  - the image data gets embedded directly in the SVG file (base64 encoded).
 	 * If false - the images get linked as external files.
 	 */
-	private static final boolean EMBED_IMAGE_IN_SVG = false;
+	private static final boolean EMBED_IMAGE_IN_SVG = true;
 
 	
 	public static void main(String[] args) throws Exception {
@@ -112,13 +111,18 @@ public class Main {
 	private static void processSvg(Map<String, BufferedImage> images, ElectionData electionData) throws SAXException, IOException, ParserConfigurationException, XPathExpressionException, TransformerException {
 		Map<String, String> constituencyKeyNameToImageMap = images.keySet().stream().collect( Collectors.toMap(electionData.getConstituencyKeyGenerator()::toKey, Function.identity()) );
 		
-		Document doc = loadAsXmlDocument( new File(RESOURCES_DIRECTORY, SVG_MAP_INPUT_FILE) );
+		Document doc = loadAsXmlDocument( new File(RESOURCES_DIRECTORY, electionData.getSvgMapInputFile()) );
 
 		XPath xpath = XPathFactory.newInstance().newXPath();
 
 		Set<String> matches = new HashSet<>();
 		Set<String> noMatch = new TreeSet<>();
 
+		// specific 'hack' to remove a rogue path from the input SVG
+		Node pathToRemove = ((NodeList) xpath.compile("//*[@id='path717']").evaluate(doc, XPathConstants.NODESET)).item(0);
+		if(pathToRemove != null)
+			pathToRemove.getParentNode().removeChild(pathToRemove);
+		
 		System.out.println("SVG :: link constituency paths to images");
 		linkConstituencyPathsToImages(constituencyKeyNameToImageMap, doc, xpath, matches, noMatch, electionData.getConstituencyKeyGenerator());
 
@@ -146,46 +150,42 @@ public class Main {
 														Set<String> noMatch,
 														ConstituencyKeyGenerator constituencyKeyGenerator) throws XPathExpressionException {
 
-		// specific 'hack' to remove a rogue path from the input SVG
-		Node pathToRemove = ((NodeList) xpath.compile("//*[@id='path717']").evaluate(doc, XPathConstants.NODESET)).item(0);
-		pathToRemove.getParentNode().removeChild(pathToRemove);
-		
 		// Iterate over all constituency SVG paths using XPath to select the DOM nodes
-		NodeList pathnodes = ((NodeList) xpath.compile("//path").evaluate(doc, XPathConstants.NODESET));
-		for (int i = 0; i < pathnodes.getLength(); i++) {
-			Node pathNode = pathnodes.item(i);
+		NodeList pathNodes = ((NodeList) xpath.compile("//path").evaluate(doc, XPathConstants.NODESET));
+		for (int i = 0; i < pathNodes.getLength(); i++) {
+			Node pathNode = pathNodes.item(i);
 			NamedNodeMap attributes = pathNode.getAttributes();
 			Node constituencyAttribute = attributes.getNamedItem("id");
 			String constituency = constituencyAttribute.getNodeValue();
 
 			if(constituency.startsWith("path"))
 				continue; // only care about names constituencies
-
+			
 			String constituencyKey = constituencyKeyGenerator.toKey(constituency);
 			String sourceConstituency = constituencyKeyToImageName.get( constituencyKey );
 			
 			// Update the style attribute to link to the images by ID
 			String style = "fill:url(#" + constituencyKey + ")";
 			Node styleAttribute = attributes.getNamedItem("style");
+			if(styleAttribute == null){
+				// if no style exists, add it
+				styleAttribute = pathNode.getOwnerDocument().createAttribute("style");
+			    attributes.setNamedItem(styleAttribute);
+			}
+			
 			if( sourceConstituency != null ){
 				matches.add(sourceConstituency);
 
-				if(styleAttribute!= null){
-					String originalStyle = styleAttribute.getNodeValue();
-					int semicolonIndex = originalStyle.indexOf(";");
-					if(semicolonIndex >= 0)
-						style += originalStyle.substring(semicolonIndex);
-					style = style.replaceAll("&", "&amp;");
-					// increase the constituency border line width
-					style = style.replace("stroke-width:0.5", "stroke-width:0.8");
-				}else{
-					// if no style exists, add it
-					styleAttribute = pathNode.getOwnerDocument().createAttribute("style");
-				    attributes.setNamedItem(styleAttribute);
-				}
+				String originalStyle = styleAttribute.getNodeValue();
+				int semicolonIndex = originalStyle.indexOf(";");
+				if(semicolonIndex >= 0)
+					style += originalStyle.substring(semicolonIndex);
+				style = style.replaceAll("&", "&amp;");
+				// increase the constituency border line width
+				style = style.replace("stroke-width:0.5", "stroke-width:0.8");
 			}else{
 				noMatch.add(constituencyKey);
-				if(styleAttribute!= null){
+				if(styleAttribute != null){
 					String originalStyle = styleAttribute.getNodeValue();
 					style = originalStyle.replaceFirst("fill:#......", "fill:#AAAAAA");
 				}
@@ -193,7 +193,7 @@ public class Main {
 			styleAttribute.setNodeValue(style);
 		}
 	}
-	
+
 	/**
 	 * Generates the Image Pattern definitions in the SVG file.
 	 * 
@@ -207,6 +207,13 @@ public class Main {
 													ElectionData electionData) throws XPathExpressionException, IOException {
 		NodeList nodes = (NodeList) xpath.compile("//defs").evaluate(doc, XPathConstants.NODESET);
 		Node defsNode = nodes.item(0);
+		if(defsNode == null){
+			// insert <defs> element
+			Element root = doc.getDocumentElement();
+			defsNode = doc.createElement("defs");
+			root.appendChild(defsNode);
+		}
+		
 		for (String constituency : matches) {
 			// <pattern id="Aberavon" patternUnits="userSpaceOnUse" height="100" width="100">
 			//    <image x="0" y="0" height="100" width="100" xlink:href=".\constituencies\Aberavon.png"></image>
@@ -225,10 +232,6 @@ public class Main {
 			imageNode.setAttribute("height", String.valueOf(IMAGE_HEIGHT));
 			
 			if(EMBED_IMAGE_IN_SVG){
-				//  xlink:href=".\\constituencies\${ElectionYearDataSource}\Aberavon.png"
-				String imagePath = ".\\" + electionData.getElectionYearDataSource() + TARGET_OUTPUT_IMAGE_DIR + constituencyNameKey + TARGET_OUTPUT_IMAGE_FORMAT;
-				imageNode.setAttribute("xlink:href", imagePath);
-			}else{
 				//xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="
 				BufferedImage image = images.get(constituency);
 				String imgBase64Data;
@@ -239,6 +242,10 @@ public class Main {
 				}
 				
 				imageNode.setAttribute("xlink:href", "data:image/gif;base64," + imgBase64Data);
+			}else{
+				//  xlink:href=".\\constituencies\${ElectionYearDataSource}\Aberavon.png"
+				String imagePath = ".\\" + electionData.getElectionYearDataSource() + TARGET_OUTPUT_IMAGE_DIR + constituencyNameKey + TARGET_OUTPUT_IMAGE_FORMAT;
+				imageNode.setAttribute("xlink:href", imagePath);
 			}
 			
 			patternNode.appendChild(imageNode);
