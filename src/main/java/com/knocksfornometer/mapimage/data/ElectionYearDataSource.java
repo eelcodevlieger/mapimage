@@ -2,6 +2,7 @@ package com.knocksfornometer.mapimage.data;
 
 
 public enum ElectionYearDataSource{
+	_2005ElectoralCommission(ElectionYear._2005, ElectionDataSource.ElectoralCommission),
 	_2010ElectoralCommission(ElectionYear._2010, ElectionDataSource.ElectoralCommission),
 	_2015ElectoralCommission(ElectionYear._2015, ElectionDataSource.ElectoralCommission),
 	_2015Guardian(ElectionYear._2015, ElectionDataSource.Guardian);

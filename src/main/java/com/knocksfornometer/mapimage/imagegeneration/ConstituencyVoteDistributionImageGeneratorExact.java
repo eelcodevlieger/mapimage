@@ -26,12 +26,16 @@ public class ConstituencyVoteDistributionImageGeneratorExact implements ImageGen
 	public void generate(WritableRaster raster) {
 		int width = raster.getWidth();
 		int height = raster.getHeight();
+		
+		if(width * height % 100 != 0)
+			throw new IllegalStateException("Currently restricting pixelcount to multiples of 100 (representing vote percentage)");
+		
 		float[][] pixels = getVoteDistributionPixels(width, height, candidates.getCandidatesExpanded());
 		CollectionUtils.shuffle(pixels); // make the distribution more realistic by shuffling the pixel locations
 
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
-				int pixelIndex = x * width + y;
+				int pixelIndex = x * height + y;
 				raster.setPixel(x, y, pixels[pixelIndex]);
 			}	
 		}
@@ -42,7 +46,7 @@ public class ConstituencyVoteDistributionImageGeneratorExact implements ImageGen
 
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
-				int pixelIndex = x * width + y;
+				int pixelIndex = x * height + y;
 				pixels[pixelIndex] = getPixel( candidatesExpanded[pixelIndex % 100] );
 			}	
 		}

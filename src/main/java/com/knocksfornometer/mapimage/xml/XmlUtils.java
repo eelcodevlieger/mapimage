@@ -18,9 +18,9 @@ import org.xml.sax.SAXException;
 
 public class XmlUtils {
 
-	public static Document loadAsXmlDocument(String xmlFile) throws SAXException, IOException, ParserConfigurationException {
+	public static Document loadAsXmlDocument(File xmlFile) throws SAXException, IOException, ParserConfigurationException {
 		DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
-		return domFactory.newDocumentBuilder().parse(new File(xmlFile).getAbsolutePath());
+		return domFactory.newDocumentBuilder().parse(xmlFile.getAbsolutePath());
 	}
 
 	public static void writeXmlDocumentToFile(Document doc, String fileName) throws TransformerFactoryConfigurationError, TransformerConfigurationException, TransformerException {

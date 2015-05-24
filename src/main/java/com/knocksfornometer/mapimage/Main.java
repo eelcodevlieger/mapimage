@@ -48,10 +48,10 @@ import com.knocksfornometer.mapimage.imagegeneration.ImageGenerator;
  * As seen on https://en.wikipedia.org/wiki/United_Kingdom_general_election,_2015#Voting_distribution_per_constituency
  *  
  * <p>
- * Program does the following:
+ * Program does the following; for each election year:
  * <ul>
  *   <li>reads in a map of the UK in SVG format - https://commons.wikimedia.org/wiki/File:2015UKElectionMap.svg</li>
- *   <li>reads in election data from {@value #JSON_INPUT_DATA_URL}</li>
+ *   <li>reads in election data</li>
  *   <li>looks up party colors (no vote = BLACK) and calculates a voting distribution for each constituency</li>
  *   <li>generates a 'voting distribution' image for each constituency using an {@link ImageGenerator}
  *   	(pixels represent the party colour and appear in frequency proportional to the votes).</li>
@@ -64,26 +64,24 @@ import com.knocksfornometer.mapimage.imagegeneration.ImageGenerator;
 public class Main {
 
 	private static final int NUM_IMAGE_GENERATION_THREADS = 10;
-	
-	// TODO move to properties file
-	private static final String SVG_MAP_INPUT_FILE = "src\\main\\resources\\2015UKElectionMap.svg";
+
+	private static final File RESOURCES_DIRECTORY = new File("src\\main\\resources");
+	private static final String SVG_MAP_INPUT_FILE = "2015UKElectionMap.svg";
 	private static final String TARGET_OUTPUT_IMAGE_FORMAT = "png";
 	private static final String TARGET_OUTPUT_BASE_DIR = "target\\map\\";
 	private static final String TARGET_OUTPUT_IMAGE_DIR = "\\constituencies\\";
-//	private static final String SVG_MAP_OUTPUT_FILE = "\\2015UKElectionMap_votes.svg";
 	private static final String SVG_MAP_OUTPUT_FILE = "UKElectionMap_votes.svg";
 	private static final int IMAGE_WIDTH = 100;
 	private static final int IMAGE_HEIGHT = 100;
 	
 	/**
-	 * If true  - the image data gets embedded directly in the svg file (base64 encoded).
+	 * If true  - the image data gets embedded directly in the SVG file (base64 encoded).
 	 * If false - the images get linked as external files.
 	 */
 	private static final boolean EMBED_IMAGE_IN_SVG = false;
 
 	
 	public static void main(String[] args) throws Exception {
-		
 		for ( ElectionYearDataSource electionYearDataSource : ElectionYearDataSource.values() ) {
 			System.out.println("Loading election data [electionYearDataSource=" + electionYearDataSource + "]");
 			
@@ -114,7 +112,7 @@ public class Main {
 	private static void processSvg(Map<String, BufferedImage> images, ElectionData electionData) throws SAXException, IOException, ParserConfigurationException, XPathExpressionException, TransformerException {
 		Map<String, String> constituencyKeyNameToImageMap = images.keySet().stream().collect( Collectors.toMap(electionData.getConstituencyKeyGenerator()::toKey, Function.identity()) );
 		
-		Document doc = loadAsXmlDocument(SVG_MAP_INPUT_FILE);
+		Document doc = loadAsXmlDocument( new File(RESOURCES_DIRECTORY, SVG_MAP_INPUT_FILE) );
 
 		XPath xpath = XPathFactory.newInstance().newXPath();
 
@@ -168,10 +166,10 @@ public class Main {
 			
 			// Update the style attribute to link to the images by ID
 			String style = "fill:url(#" + constituencyKey + ")";
+			Node styleAttribute = attributes.getNamedItem("style");
 			if( sourceConstituency != null ){
 				matches.add(sourceConstituency);
 
-				Node styleAttribute = attributes.getNamedItem("style");
 				if(styleAttribute!= null){
 					String originalStyle = styleAttribute.getNodeValue();
 					int semicolonIndex = originalStyle.indexOf(";");
@@ -185,10 +183,14 @@ public class Main {
 					styleAttribute = pathNode.getOwnerDocument().createAttribute("style");
 				    attributes.setNamedItem(styleAttribute);
 				}
-				styleAttribute.setNodeValue(style);
 			}else{
 				noMatch.add(constituencyKey);
+				if(styleAttribute!= null){
+					String originalStyle = styleAttribute.getNodeValue();
+					style = originalStyle.replaceFirst("fill:#......", "fill:#AAAAAA");
+				}
 			}
+			styleAttribute.setNodeValue(style);
 		}
 	}
 	
@@ -265,6 +267,12 @@ public class Main {
 		
 		ExecutorService imageGenerationThreadPool = Executors.newFixedThreadPool(NUM_IMAGE_GENERATION_THREADS);
 		
+		// create output directory if it doesn't yet exists + clean previous output
+		File mapImageDir = new File(TARGET_OUTPUT_BASE_DIR + electionData.getElectionYearDataSource() + TARGET_OUTPUT_IMAGE_DIR);
+		mapImageDir.mkdirs();
+		for(File imageFile: mapImageDir.listFiles()) 
+			imageFile.delete(); 
+		
 		for (Entry<String, Candidates> entry : constituencyParties.entrySet()) {
 
 			imageGenerationThreadPool.execute( new Runnable() {
@@ -273,8 +281,12 @@ public class Main {
 					String imgName = entry.getKey();
 					System.out.println("Generate image [imgName=" + imgName + "]");
 					BufferedImage image = generateImage( new ConstituencyVoteDistributionImageGeneratorExact( entry.getValue() ) );
-					String outputImagePath = TARGET_OUTPUT_BASE_DIR + electionData.getElectionYearDataSource() + TARGET_OUTPUT_IMAGE_DIR + electionData.getConstituencyKeyGenerator().toKey(imgName) + "." + TARGET_OUTPUT_IMAGE_FORMAT;
-					writeImageToFile(image, outputImagePath);
+					File outputImagePath = new File(mapImageDir, electionData.getConstituencyKeyGenerator().toKey(imgName) + "." + TARGET_OUTPUT_IMAGE_FORMAT);
+					try {
+						ImageIO.write(image, TARGET_OUTPUT_IMAGE_FORMAT, outputImagePath);
+					} catch (Exception e) {
+						System.err.println("Problem writing image " + e);
+					}
 					images.put(imgName, image);
 				}
 			});
@@ -297,18 +309,5 @@ public class Main {
 		BufferedImage image = new BufferedImage(IMAGE_WIDTH, IMAGE_HEIGHT, BufferedImage.TYPE_INT_RGB);
 		imageGenerator.generate( image.getRaster() );
 		return image;
-	}
-
-	private static void writeImageToFile(BufferedImage image, String pathname) {
-		try {
-			File outputFile = new File(pathname);
-			
-			// create output directory if it doesn't yet exists
-			outputFile.getParentFile().mkdirs();
-			
-			ImageIO.write(image, TARGET_OUTPUT_IMAGE_FORMAT, outputFile);
-		} catch (Exception e) {
-			System.err.println("Problem writing image " + e);
-		}
 	}
 }

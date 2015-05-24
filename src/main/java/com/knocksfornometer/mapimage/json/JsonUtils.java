@@ -1,6 +1,6 @@
 package com.knocksfornometer.mapimage.json;
 
-import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -16,13 +16,14 @@ public class JsonUtils {
 	/**
 	 * Load String to String Map from a JSON file
 	 */
-	public static Map<String, String> loadStringMapFromJsonFile(String filePath) throws FileNotFoundException {
-		GsonBuilder gsonBuilder = new GsonBuilder();
-		Gson gson = gsonBuilder.create();
-		Reader reader = new FileReader(filePath);
+	public static Map<String, String> loadStringMapFromJsonFile(File filePath) throws IOException {
+		Gson gson = new GsonBuilder().create();
 		Type type = new TypeToken<Map<String, String>>(){}.getType();
-		return gson.fromJson(reader, type);
+		try(Reader reader = new FileReader(filePath)){
+			return gson.fromJson(reader, type);
+		}
 	}
+	
 	/**
 	 * Loads the JSON data and closes the Reader.
 	 */
