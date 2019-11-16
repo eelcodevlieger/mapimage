@@ -8,7 +8,6 @@ import java.util.Map;
 import com.knocksfornometer.mapimage.data._2005.electoralcommission._2005ElectoralCommissionElectionData;
 import com.knocksfornometer.mapimage.data._2010.electoralcommission._2010ElectoralCommissionElectionData;
 import com.knocksfornometer.mapimage.data._2015.electoralcommission._2015ElectoralCommissionElectionData;
-import com.knocksfornometer.mapimage.data._2015.guardian._2015GuardianElectionData;
 import com.knocksfornometer.mapimage.data._2017.electoral_commission._2017ElectoralCommissionElectionData;
 
 public class ElectionDataManager {
@@ -17,7 +16,6 @@ public class ElectionDataManager {
 	private static final File RESOURCES_DIRECTORY = new File("src\\main\\resources");
 	private static final String CONSTITUENCY_NAME_MAPPING_FILE = "constituency_name_mapping.json";
 	private static final String SEAT_TO_CONSTITUENCY_NAME_MAPPING_FILE = "2005_seat_to_constituency_mapping.json";
-	private static final String PARTY_COLOR_MAPPING_FILE_GUARDIAN = "election_data\\2015\\guardian\\party_color_mapping.json";
 	private static final String PARTY_COLOR_MAPPING_FILE_ELECTORAL_COMMISSION_2015 = "election_data\\2015\\electoral_commission\\party_color_mapping.json";
     private static final String PARTY_COLOR_MAPPING_FILE_ELECTORAL_COMMISSION_2017 = "election_data\\2017\\electoral_commission\\party_color_mapping.json";
 	private static final String PARTY_COLOR_MAPPING_FILE_ELECTORAL_COMMISSION = "election_data\\2010\\electoral_commission\\party_color_mapping.json";
@@ -47,10 +45,6 @@ public class ElectionDataManager {
                 Map<String, String> partyColorMapping = loadStringMapFromJsonFile( new File(RESOURCES_DIRECTORY, PARTY_COLOR_MAPPING_FILE_ELECTORAL_COMMISSION_2017) );
                 return new ElectionData(electionYearDataSource, _2017ElectoralCommissionElectionData.loadElectionData(partyColorMapping), _2015_SVG_MAP_INPUT_FILE, constituencyMapping);
             }
-			case _2015Guardian: {
-				Map<String, String> partyColorMapping = loadStringMapFromJsonFile( new File(RESOURCES_DIRECTORY, PARTY_COLOR_MAPPING_FILE_GUARDIAN) );
-				return new ElectionData(electionYearDataSource, _2015GuardianElectionData.loadElectionData(partyColorMapping, constituencyMapping), _2015_SVG_MAP_INPUT_FILE, constituencyMapping);
-			}
 			default:
 				throw new RuntimeException("Unmapped electionYearDataSource [electionYearDataSource=" + electionYearDataSource + "]");
 		}

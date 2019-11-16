@@ -1,3 +1,3 @@
 package com.knocksfornometer.mapimage.data;
 
-public enum ElectionDataSource { ElectoralCommission, Guardian }
+public enum ElectionDataSource { ElectoralCommission }
