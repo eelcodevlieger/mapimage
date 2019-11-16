@@ -21,6 +21,7 @@ public class ElectionDataManager {
 	private static final String PARTY_COLOR_MAPPING_FILE_ELECTORAL_COMMISSION = "election_data\\2010\\electoral_commission\\party_color_mapping.json";
 	private static final String _2005_SVG_MAP_INPUT_FILE = "2005UKElectionMap.svg";
 	private static final String _2015_SVG_MAP_INPUT_FILE = "2015UKElectionMap.svg";
+    @SuppressWarnings("unused")
     private static final String _2017_SVG_MAP_INPUT_FILE = "2017UKElectionMap.svg";
 	
 	public static ElectionData getElectionData(ElectionYearDataSource electionYearDataSource) throws Exception{
