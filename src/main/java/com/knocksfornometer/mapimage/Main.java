@@ -63,7 +63,7 @@ import com.knocksfornometer.mapimage.imagegeneration.ImageGenerator;
  */
 public class Main {
 
-	private static final int NUM_IMAGE_GENERATION_THREADS = 10;
+	private static final int NUM_IMAGE_GENERATION_THREADS = Runtime.getRuntime().availableProcessors();
 
 	private static final File RESOURCES_DIRECTORY = new File("src\\main\\resources");
 	private static final String TARGET_OUTPUT_IMAGE_FORMAT = "png";
@@ -81,12 +81,13 @@ public class Main {
 
 	
 	public static void main(String[] args) throws Exception {
-		for ( ElectionYearDataSource electionYearDataSource : ElectionYearDataSource.values() ) {
+		ElectionYearDataSource[] values = ElectionYearDataSource.values();
+		for ( ElectionYearDataSource electionYearDataSource : values ) {
 			System.out.println("Loading election data [electionYearDataSource=" + electionYearDataSource + "]");
 			
 			ElectionData electionData = ElectionDataManager.getElectionData(electionYearDataSource);
 			if(electionData == null){
-				System.out.println("No election data for electionYearDataSource [electionYearDataSource=" + electionYearDataSource + "]");
+				System.err.println("No election data for electionYearDataSource [electionYearDataSource=" + electionYearDataSource + "]");
 				continue;
 			}
 			
@@ -151,18 +152,19 @@ public class Main {
 														ConstituencyKeyGenerator constituencyKeyGenerator) throws XPathExpressionException {
 
 		// Iterate over all constituency SVG paths using XPath to select the DOM nodes
-		NodeList pathNodes = ((NodeList) xpath.compile("//path").evaluate(doc, XPathConstants.NODESET));
+		final NodeList pathNodes = ((NodeList) xpath.compile("//path").evaluate(doc, XPathConstants.NODESET));
 		for (int i = 0; i < pathNodes.getLength(); i++) {
-			Node pathNode = pathNodes.item(i);
-			NamedNodeMap attributes = pathNode.getAttributes();
-			Node constituencyAttribute = attributes.getNamedItem("id");
-			String constituency = constituencyAttribute.getNodeValue();
+			final Node pathNode = pathNodes.item(i);
+			final NamedNodeMap attributes = pathNode.getAttributes();
+			final Node constituencyAttribute = attributes.getNamedItem("id");
+			final String constituency = constituencyAttribute.getNodeValue();
 
-			if(constituency.startsWith("path"))
+			if(constituency.startsWith("path")) {
 				continue; // only care about names constituencies
+			}
 			
-			String constituencyKey = constituencyKeyGenerator.toKey(constituency);
-			String sourceConstituency = constituencyKeyToImageName.get( constituencyKey );
+			final String constituencyKey = constituencyKeyGenerator.toKey(constituency);
+			final String sourceConstituency = constituencyKeyToImageName.get( constituencyKey );
 			
 			// Update the style attribute to link to the images by ID
 			String style = "fill:url(#" + constituencyKey + ")";
@@ -200,12 +202,12 @@ public class Main {
 	 * {@link #EMBED_IMAGE_IN_SVG} controls whether the image data gets embedded directly in the svg file
 	 * or gets linked to external image files in {@value #TARGET_OUTPUT_IMAGE_DIR}
 	 */
-	private static void generatePatternImageDefs(	Document doc,
-													XPath xpath,
-													Set<String> matches,
-													Map<String, BufferedImage> images,
-													ElectionData electionData) throws XPathExpressionException, IOException {
-		NodeList nodes = (NodeList) xpath.compile("//defs").evaluate(doc, XPathConstants.NODESET);
+	private static void generatePatternImageDefs(	final Document doc,
+													final XPath xpath,
+													final Set<String> matches,
+													final Map<String, BufferedImage> images,
+													final ElectionData electionData) throws XPathExpressionException, IOException {
+		final NodeList nodes = (NodeList) xpath.compile("//defs").evaluate(doc, XPathConstants.NODESET);
 		Node defsNode = nodes.item(0);
 		if(defsNode == null){
 			// insert <defs> element
@@ -218,14 +220,14 @@ public class Main {
 			// <pattern id="Aberavon" patternUnits="userSpaceOnUse" height="100" width="100">
 			//    <image x="0" y="0" height="100" width="100" xlink:href=".\constituencies\Aberavon.png"></image>
 			// </pattern>
-			Element patternNode = doc.createElement("pattern");
-			String constituencyNameKey = electionData.getConstituencyKeyGenerator().toKey(constituency);
+			final Element patternNode = doc.createElement("pattern");
+			final String constituencyNameKey = electionData.getConstituencyKeyGenerator().toKey(constituency);
 			patternNode.setAttribute("id", constituencyNameKey);
 			patternNode.setAttribute("patternUnits", "userSpaceOnUse");
 			patternNode.setAttribute("width", String.valueOf(IMAGE_WIDTH) );
 			patternNode.setAttribute("height", String.valueOf(IMAGE_HEIGHT));
 			
-			Element imageNode = doc.createElement("image");
+			final Element imageNode = doc.createElement("image");
 			imageNode.setAttribute("x", "0");
 			imageNode.setAttribute("y", "0");
 			imageNode.setAttribute("width", String.valueOf(IMAGE_WIDTH));
@@ -233,8 +235,8 @@ public class Main {
 			
 			if(EMBED_IMAGE_IN_SVG){
 				//xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="
-				BufferedImage image = images.get(constituency);
-				String imgBase64Data;
+				final BufferedImage image = images.get(constituency);
+				final String imgBase64Data;
 				try(ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()){
 					// embed image data as base64 GIF
 					ImageIO.write(image, "gif", byteArrayOutputStream);
@@ -244,7 +246,7 @@ public class Main {
 				imageNode.setAttribute("xlink:href", "data:image/gif;base64," + imgBase64Data);
 			}else{
 				//  xlink:href=".\\constituencies\${ElectionYearDataSource}\Aberavon.png"
-				String imagePath = ".\\" + electionData.getElectionYearDataSource() + TARGET_OUTPUT_IMAGE_DIR + constituencyNameKey + TARGET_OUTPUT_IMAGE_FORMAT;
+				final String imagePath = ".\\" + electionData.getElectionYearDataSource() + TARGET_OUTPUT_IMAGE_DIR + constituencyNameKey + TARGET_OUTPUT_IMAGE_FORMAT;
 				imageNode.setAttribute("xlink:href", imagePath);
 			}
 			
@@ -257,9 +259,9 @@ public class Main {
 	 * Add XLink namespace to XML document
 	 * xmlns:xlink="http://www.w3.org/1999/xlink"
 	 */
-	private static void addXlinkNamespace(Document doc) {
-		Element root = doc.getDocumentElement();
-		Attr attr = doc.createAttribute("xmlns:xlink");
+	private static void addXlinkNamespace(final Document doc) {
+		final Element root = doc.getDocumentElement();
+		final Attr attr = doc.createAttribute("xmlns:xlink");
 		attr.setValue("http://www.w3.org/1999/xlink");
 		root.setAttributeNodeNS(attr);
 	}
@@ -267,42 +269,38 @@ public class Main {
 	/**
 	 * Generate the constituency voting distribution images
 	 */
-	private static Map<String, BufferedImage> generateImages(Map<String, Candidates> constituencyParties, ElectionData electionData) throws InterruptedException {
-		Map<String, BufferedImage> images = new ConcurrentHashMap<>();
-		
-		long startTime = System.currentTimeMillis();
-		
-		ExecutorService imageGenerationThreadPool = Executors.newFixedThreadPool(NUM_IMAGE_GENERATION_THREADS);
+	private static Map<String, BufferedImage> generateImages(final Map<String, Candidates> constituencyParties, final ElectionData electionData) throws InterruptedException {
+		final Map<String, BufferedImage> images = new ConcurrentHashMap<>();
+		final ExecutorService imageGenerationThreadPool = Executors.newFixedThreadPool(NUM_IMAGE_GENERATION_THREADS);
+		final long startTime = System.currentTimeMillis();
 		
 		// create output directory if it doesn't yet exists + clean previous output
-		File mapImageDir = new File(TARGET_OUTPUT_BASE_DIR + electionData.getElectionYearDataSource() + TARGET_OUTPUT_IMAGE_DIR);
+		final File mapImageDir = new File(TARGET_OUTPUT_BASE_DIR + electionData.getElectionYearDataSource() + TARGET_OUTPUT_IMAGE_DIR);
 		mapImageDir.mkdirs();
-		for(File imageFile: mapImageDir.listFiles()) 
+		for(File imageFile: mapImageDir.listFiles()) {
 			imageFile.delete(); 
+		}
 		
 		for (Entry<String, Candidates> entry : constituencyParties.entrySet()) {
 
-			imageGenerationThreadPool.execute( new Runnable() {
-				@Override
-				public void run() {
-					String imgName = entry.getKey();
-					System.out.println("Generate image [imgName=" + imgName + "]");
-					BufferedImage image = generateImage( new ConstituencyVoteDistributionImageGeneratorExact( entry.getValue() ) );
-					File outputImagePath = new File(mapImageDir, electionData.getConstituencyKeyGenerator().toKey(imgName) + "." + TARGET_OUTPUT_IMAGE_FORMAT);
-					try {
-						ImageIO.write(image, TARGET_OUTPUT_IMAGE_FORMAT, outputImagePath);
-					} catch (Exception e) {
-						System.err.println("Problem writing image " + e);
-					}
-					images.put(imgName, image);
+			imageGenerationThreadPool.execute( () -> {
+				final String imgName = entry.getKey();
+				System.out.println("Generate image [imgName=" + imgName + "]");
+				final BufferedImage image = generateImage( new ConstituencyVoteDistributionImageGeneratorExact( entry.getValue() ) );
+				final File outputImagePath = new File(mapImageDir, electionData.getConstituencyKeyGenerator().toKey(imgName) + "." + TARGET_OUTPUT_IMAGE_FORMAT);
+				try {
+					ImageIO.write(image, TARGET_OUTPUT_IMAGE_FORMAT, outputImagePath);
+				} catch (Exception e) {
+					System.err.println("Problem writing image " + e);
 				}
+				images.put(imgName, image);
 			});
 			
 		}
 
 		// clean shutdown of thread pool tasks
 		imageGenerationThreadPool.shutdown();
-		boolean finished = imageGenerationThreadPool.awaitTermination(10, TimeUnit.MINUTES);
+		final boolean finished = imageGenerationThreadPool.awaitTermination(10, TimeUnit.MINUTES);
 		if(!finished)
 			System.err.println("Image generation still running after 10 minutes");
 		else{
@@ -313,7 +311,7 @@ public class Main {
 	}
 
 	private static BufferedImage generateImage(ImageGenerator imageGenerator) {
-		BufferedImage image = new BufferedImage(IMAGE_WIDTH, IMAGE_HEIGHT, BufferedImage.TYPE_INT_RGB);
+		final BufferedImage image = new BufferedImage(IMAGE_WIDTH, IMAGE_HEIGHT, BufferedImage.TYPE_INT_RGB);
 		imageGenerator.generate( image.getRaster() );
 		return image;
 	}

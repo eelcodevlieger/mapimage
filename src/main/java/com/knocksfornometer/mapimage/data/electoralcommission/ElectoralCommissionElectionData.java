@@ -25,17 +25,13 @@ import com.knocksfornometer.mapimage.Candidates;
 public class ElectoralCommissionElectionData {
 
 	public static Map<String, Candidates> loadElectionData(String inputDataFile, Map<String, String> partyColorMapping, boolean blankResultsOnConstituencyRow, int numInitialRowsToSkip) throws Exception {
+	    Map<String, Candidates> electionDataMap = new HashMap<>();
 
-		Map<String, Candidates> electionDataMap = new HashMap<>();
-		
-		Workbook wb;
-		try(InputStream inp = new FileInputStream(inputDataFile)){
-			wb = WorkbookFactory.create(inp);
-		}
-		
-	    Sheet sheet = wb.getSheetAt(0);
-	    
-	    sheet = wb.getSheetAt(0);
+        Workbook workBook;
+        try(InputStream inputStream = new FileInputStream(inputDataFile)){
+            workBook = WorkbookFactory.create(inputStream);
+        }
+        Sheet sheet = workBook.getSheetAt(0);
 	    
 	    boolean isConstituencyRow = true;
 	    boolean isTurnoutRow = true;
