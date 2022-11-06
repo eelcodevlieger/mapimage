@@ -18,8 +18,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.knocksfornometer.mapimage.Candidate;
-import com.knocksfornometer.mapimage.Candidates;
 import com.knocksfornometer.mapimage.imagegeneration.ConstituencyVoteDistributionImageGeneratorExact;
 import com.knocksfornometer.mapimage.imagegeneration.ImageGenerator;
 
@@ -37,7 +35,7 @@ public class ImageGenerationTest {
 	private ImageGenerator imageGenerator;
 	
 	@BeforeAll
-	public static void setUpBeforeClass() throws Exception {
+	public static void setUpBeforeClass() {
 		List<Candidate> candidateList = new ArrayList<>( asList(CANDIDATE_CON, CANDIDATE_LAB, CANDIDATE_SNP, CANDIDATE_OTHER) );
 		noVoteCandidate = Candidate.createNoVoteCandidate(candidateList);
 		candidateList.add(noVoteCandidate);
@@ -45,7 +43,7 @@ public class ImageGenerationTest {
 	}
 
 	@BeforeEach
-	public void setUp() throws Exception {
+	public void setUp() {
 		raster = new BufferedImage(200, 500, BufferedImage.TYPE_INT_ARGB).getRaster();
 		imageGenerator = new ConstituencyVoteDistributionImageGeneratorExact(candidates);
 	}

@@ -13,7 +13,6 @@ import javax.swing.JPanel;
  * 
  * @author Eelco de Vlieger
  */
-@SuppressWarnings("serial")
 public class ImagePanel extends JPanel {
 
 	private final Image img;

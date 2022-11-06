@@ -16,7 +16,7 @@ import com.knocksfornometer.mapimage.Candidates;
  */
 public class ConstituencyVoteDistributionImageGeneratorApproximation implements ImageGenerator {
 
-	private Candidates candidates;
+	private final Candidates candidates;
 
 	public ConstituencyVoteDistributionImageGeneratorApproximation(Candidates candidates) {
 		this.candidates = candidates;
