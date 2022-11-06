@@ -12,7 +12,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -56,7 +55,7 @@ public class _2017ElectoralCommissionElectionData {
 		return electorateSizeData;
 	}
 
-	private static Map<String, Candidates> loadElectionData(final Workbook workBook, final Map<String, String> partyColorMapping, final Map<String, Long> electorateSizeData) throws Exception {
+	private static Map<String, Candidates> loadElectionData(final Workbook workBook, final Map<String, String> partyColorMapping, final Map<String, Long> electorateSizeData) {
 
 		final ListMultimap<String, Candidate> electionDataMap = ArrayListMultimap.create();
 
@@ -99,39 +98,24 @@ public class _2017ElectoralCommissionElectionData {
 	}
 
     private static String toPartyCode(String partyIdentifier) {
-        switch (partyIdentifier) {
-            case "Speaker":
-                return "SPK";
-            case "Conservative":
-                return "CON";
-            case "Labour":
-                return "LAB";
-            case "Liberal Democrats":
-                return "LD";
-            case "Green Party":
-                return "GREEN";
-            case "Plaid Cymru":
-                return "PC";
-            case "Sinn Féin":
-                return "SF";
-            case "ED":
-            case "EDP":
-                return "ENG DEM";
-            case "Independent":
-            case "Ashfield": // Ashfield Independents Putting People Before Politics
-                return "IND";
-            case "PBP Alliance":
-                return "PBPA";
-            case "AGS":
-                return "GREEN SOC";
-            case "NHAP":
-                return "NATIONAL HEALTH ACTION PARTY";
-            default:
-                return partyIdentifier;
-        }
+		return switch (partyIdentifier) {
+			case "Speaker" -> "SPK";
+			case "Conservative" -> "CON";
+			case "Labour" -> "LAB";
+			case "Liberal Democrats" -> "LD";
+			case "Green Party" -> "GREEN";
+			case "Plaid Cymru" -> "PC";
+			case "Sinn Féin" -> "SF";
+			case "ED", "EDP" -> "ENG DEM";
+			case "Independent", "Ashfield" -> "IND"; // Ashfield Independents Putting People Before Politics
+			case "PBP Alliance" -> "PBPA";
+			case "AGS" -> "GREEN SOC";
+			case "NHAP" -> "NATIONAL HEALTH ACTION PARTY";
+			default -> partyIdentifier;
+		};
     }
 
-    private static @Nullable String clean(String constituencyName) {
+    private static String clean(String constituencyName) {
         return constituencyName.replaceFirst("\\s?\\d$", ""); // remove trailing digit on end of constituency name
     }
 

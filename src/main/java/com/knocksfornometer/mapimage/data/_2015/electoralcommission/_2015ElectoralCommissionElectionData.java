@@ -64,7 +64,7 @@ public class _2015ElectoralCommissionElectionData {
 		return turnoutData;
 	}
 
-	private static Map<String, Candidates> loadElectionData(final Workbook workBook, final Map<String, String> partyColorMapping, final Map<String, Double> turnoutData) throws Exception {
+	private static Map<String, Candidates> loadElectionData(final Workbook workBook, final Map<String, String> partyColorMapping, final Map<String, Double> turnoutData) {
 
 		final ListMultimap<String, Candidate> electionDataMap = ArrayListMultimap.create();
 

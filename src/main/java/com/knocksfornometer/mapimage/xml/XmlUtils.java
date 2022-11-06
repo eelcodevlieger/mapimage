@@ -6,7 +6,6 @@ import java.io.IOException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -23,7 +22,7 @@ public class XmlUtils {
 		return domFactory.newDocumentBuilder().parse(xmlFile.getAbsolutePath());
 	}
 
-	public static void writeXmlDocumentToFile(Document doc, String fileName) throws TransformerFactoryConfigurationError, TransformerConfigurationException, TransformerException {
+	public static void writeXmlDocumentToFile(Document doc, String fileName) throws TransformerFactoryConfigurationError, TransformerException {
 		TransformerFactory transformerFactory = TransformerFactory.newInstance();
 		Transformer transformer = transformerFactory.newTransformer();
 		transformer.transform(new DOMSource(doc), new StreamResult( new File(fileName) ));

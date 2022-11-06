@@ -10,7 +10,7 @@ public enum ElectionYearDataSource{
 	private final ElectionYear electionYear;
 	private final ElectionDataSource electionDataSource;
 	
-	private ElectionYearDataSource(ElectionYear electionYear, ElectionDataSource electionDataSource){
+	ElectionYearDataSource(ElectionYear electionYear, ElectionDataSource electionDataSource){
 		this.electionYear = electionYear;
 		this.electionDataSource = electionDataSource;
 	}

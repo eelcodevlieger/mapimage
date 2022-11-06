@@ -44,9 +44,9 @@ import com.knocksfornometer.mapimage.imagegeneration.ImageGenerator;
 
 /**
  * Generate a map of the UK showing the voting distribution per constituency.
- *  
+ *
  * As seen on https://en.wikipedia.org/wiki/United_Kingdom_general_election,_2015#Voting_distribution_per_constituency
- *  
+ *
  * <p>
  * Program does the following; for each election year:
  * <ul>
@@ -58,7 +58,7 @@ import com.knocksfornometer.mapimage.imagegeneration.ImageGenerator;
  *   <li>populates the constituencies in the image map with the generated images</li>
  *   <li>writes the updated SVG file</li>
  * </ul>
- * 
+ *
  * @author Eelco de Vlieger
  */
 public class Main {
@@ -86,11 +86,7 @@ public class Main {
 			System.out.println("Loading election data [electionYearDataSource=" + electionYearDataSource + "]");
 			
 			ElectionData electionData = ElectionDataManager.getElectionData(electionYearDataSource);
-			if(electionData == null){
-				System.err.println("No election data for electionYearDataSource [electionYearDataSource=" + electionYearDataSource + "]");
-				continue;
-			}
-			
+
 			processElectionData(electionData, electionYearDataSource);
 		}
 		
@@ -107,7 +103,6 @@ public class Main {
 
 	/**
 	 * Read SVG -> update constituency images -> write SVG
-	 * @param electionData 
 	 */
 	private static void processSvg(Map<String, BufferedImage> images, ElectionData electionData) throws SAXException, IOException, ParserConfigurationException, XPathExpressionException, TransformerException {
 		Map<String, String> constituencyKeyNameToImageMap = images.keySet().stream().collect( Collectors.toMap(electionData.getConstituencyKeyGenerator()::toKey, Function.identity()) );
@@ -277,8 +272,11 @@ public class Main {
 		// create output directory if it doesn't yet exists + clean previous output
 		final File mapImageDir = new File(TARGET_OUTPUT_BASE_DIR + electionData.getElectionYearDataSource() + TARGET_OUTPUT_IMAGE_DIR);
 		mapImageDir.mkdirs();
-		for(File imageFile: mapImageDir.listFiles()) {
-			imageFile.delete(); 
+		for(File imageFile : mapImageDir.listFiles()) {
+			final var deleted = imageFile.delete();
+			if(!deleted){
+				System.err.println("Failed to delete file: " + imageFile);
+			}
 		}
 		
 		for (Entry<String, Candidates> entry : constituencyParties.entrySet()) {

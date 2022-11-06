@@ -10,7 +10,7 @@ public class ConstituencyMapping implements ConstituencyKeyGenerator{
 	private final Map<String, String> constituencyNameMapping;
 	private final Map<String, String> seatNumberToConstituencyNameMapping;
 
-	public ConstituencyMapping(String[] prefixes, Map<String, String> constituencyNameMapping, Map<String, String> seatNumberToConstituencyNameMapping) {
+	public ConstituencyMapping(final String[] prefixes, final Map<String, String> constituencyNameMapping, final Map<String, String> seatNumberToConstituencyNameMapping) {
 		this.prefixes = prefixes;
 		this.constituencyNameMapping = constituencyNameMapping;
 		this.seatNumberToConstituencyNameMapping = seatNumberToConstituencyNameMapping;
@@ -18,8 +18,8 @@ public class ConstituencyMapping implements ConstituencyKeyGenerator{
 	
 	/**
 	 * Builds a key from the constituencyName, converting to UPPERCASE ASCII and removing spaces.
-	 * {@link #PREFIXES} holds a list of prefixes which will be changed to suffix in the key (WESTBRISTOL -> BRISTOLWEST).
-	 * {@link #constituencyNameMapping} allows for manual key overrides loaded from the {@value #CONSTITUENCY_NAME_MAPPING_FILE} config file
+	 * {@link #prefixes} holds a list of prefixes which will be changed to suffix in the key (WESTBRISTOL -> BRISTOLWEST).
+	 * {@link #constituencyNameMapping} allows for manual key overrides
 	 */
 	public String toKey(String constituencyName) {
 		// 2005 data mapping
@@ -44,7 +44,7 @@ public class ConstituencyMapping implements ConstituencyKeyGenerator{
 		return keyMappingOverride != null ? keyMappingOverride : constituencyName;
 	}
 
-	private String convertSeatNumberToConstituencyName(String seatNumber) {
+	private String convertSeatNumberToConstituencyName(final String seatNumber) {
 		String constituencyName = seatNumberToConstituencyNameMapping.get(seatNumber);
 		return constituencyName != null ? constituencyName : seatNumber;
 	}
