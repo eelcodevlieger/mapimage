@@ -11,4 +11,8 @@ public enum ElectionYear {
 	public int getYear() {
 		return year;
 	}
+
+	public static ElectionYear get(int year){
+		return ElectionYear.valueOf("_" + year);
+	}
 }
