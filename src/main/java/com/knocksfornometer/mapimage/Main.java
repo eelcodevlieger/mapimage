@@ -7,7 +7,9 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,6 +30,10 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import com.knocksfornometer.mapimage.data.ElectionData;
+import com.knocksfornometer.mapimage.data.ElectionDataManager;
+import com.knocksfornometer.mapimage.data.ElectionYear;
+import com.knocksfornometer.mapimage.data.ElectionYearDataSource;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -36,9 +42,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.knocksfornometer.mapimage.data.ElectionData;
-import com.knocksfornometer.mapimage.data.ElectionDataManager;
-import com.knocksfornometer.mapimage.data.ElectionYearDataSource;
 import com.knocksfornometer.mapimage.imagegeneration.ConstituencyVoteDistributionImageGeneratorExact;
 import com.knocksfornometer.mapimage.imagegeneration.ImageGenerator;
 
@@ -80,22 +83,35 @@ public class Main {
 	private static final boolean EMBED_IMAGE_IN_SVG = true;
 
 	
-	public static void main(String[] args) throws Exception {
-		ElectionYearDataSource[] values = ElectionYearDataSource.values();
-		for ( ElectionYearDataSource electionYearDataSource : values ) {
+	public static void main(final String... args) throws Exception {
+		for(ElectionYearDataSource electionYearDataSource : getElectionYearDataSources(args)) {
 			System.out.println("Loading election data [electionYearDataSource=" + electionYearDataSource + "]");
-			
 			ElectionData electionData = ElectionDataManager.getElectionData(electionYearDataSource);
-
 			processElectionData(electionData, electionYearDataSource);
 		}
 		
 		System.out.println("Completed");
 	}
 
-	private static void processElectionData(ElectionData electionData, ElectionYearDataSource electionYearDataSource) throws Exception {
+	/**
+	 * Default to all ElectionYearDataSource values when no specific ones are requested.
+	 */
+	private static ElectionYearDataSource[] getElectionYearDataSources(final String... electionYears) {
+		if(electionYears == null || electionYears.length == 0){
+			return ElectionYearDataSource.values();
+		}
+
+		return Arrays.stream(electionYears)
+				.map(Integer::valueOf)
+				.map(ElectionYear::get)
+				.map(ElectionYearDataSource::getElectionYearDataSourceByYear)
+				.flatMap(Collection::stream)
+				.toArray(ElectionYearDataSource[]::new);
+	}
+
+	private static void processElectionData(final ElectionData electionData, final ElectionYearDataSource electionYearDataSource) throws Exception {
 		System.out.println("generate a 'voting distribution' image for each constituency [electionYearDataSource=" + electionYearDataSource + "]");
-		Map<String, BufferedImage> images = generateImages(electionData.getElectionDataMap(), electionData);
+		final Map<String, BufferedImage> images = generateImages(electionData.getElectionDataMap(), electionData);
 
 		System.out.println("update SVG map image and save the resulting file [electionYearDataSource=" + electionYearDataSource + "]");
 		processSvg(images, electionData);
@@ -104,18 +120,18 @@ public class Main {
 	/**
 	 * Read SVG -> update constituency images -> write SVG
 	 */
-	private static void processSvg(Map<String, BufferedImage> images, ElectionData electionData) throws SAXException, IOException, ParserConfigurationException, XPathExpressionException, TransformerException {
-		Map<String, String> constituencyKeyNameToImageMap = images.keySet().stream().collect( Collectors.toMap(electionData.getConstituencyKeyGenerator()::toKey, Function.identity()) );
-		
-		Document doc = loadAsXmlDocument( new File(RESOURCES_DIRECTORY, electionData.getSvgMapInputFile()) );
+	private static void processSvg(final Map<String, BufferedImage> images, final ElectionData electionData) throws SAXException, IOException, ParserConfigurationException, XPathExpressionException, TransformerException {
+		final Map<String, String> constituencyKeyNameToImageMap = images.keySet().stream().collect( Collectors.toMap(electionData.getConstituencyKeyGenerator()::toKey, Function.identity()) );
 
-		XPath xpath = XPathFactory.newInstance().newXPath();
+		final Document doc = loadAsXmlDocument( new File(RESOURCES_DIRECTORY, electionData.getSvgMapInputFile()) );
 
-		Set<String> matches = new HashSet<>();
-		Set<String> noMatch = new TreeSet<>();
+		final XPath xpath = XPathFactory.newInstance().newXPath();
+
+		final Set<String> matches = new HashSet<>();
+		final Set<String> noMatch = new TreeSet<>();
 
 		// specific 'hack' to remove a rogue path from the input SVG
-		Node pathToRemove = ((NodeList) xpath.compile("//*[@id='path717']").evaluate(doc, XPathConstants.NODESET)).item(0);
+		final Node pathToRemove = ((NodeList) xpath.compile("//*[@id='path717']").evaluate(doc, XPathConstants.NODESET)).item(0);
 		if(pathToRemove != null)
 			pathToRemove.getParentNode().removeChild(pathToRemove);
 		
@@ -132,19 +148,19 @@ public class Main {
 			System.out.println("noMatch=" + noMatch);
 
 		System.out.println("SVG :: save updated file");
-		ElectionYearDataSource source = electionData.getElectionYearDataSource();
+		final ElectionYearDataSource source = electionData.getElectionYearDataSource();
 		writeXmlDocumentToFile(doc, TARGET_OUTPUT_BASE_DIR + source + "\\" + source.getElectionYear().getYear() + SVG_MAP_OUTPUT_FILE);
 	}
 
 	/**
 	 * Links constituency paths to the generated images 
 	 */
-	private static void linkConstituencyPathsToImages(	Map<String, String> constituencyKeyToImageName,
-														Document doc,
-														XPath xpath,
-														Set<String> matches,
-														Set<String> noMatch,
-														ConstituencyKeyGenerator constituencyKeyGenerator) throws XPathExpressionException {
+	private static void linkConstituencyPathsToImages(final Map<String, String> constituencyKeyToImageName,
+													  final Document doc,
+													  final XPath xpath,
+													  final Set<String> matches,
+													  final Set<String> noMatch,
+													  final ConstituencyKeyGenerator constituencyKeyGenerator) throws XPathExpressionException {
 
 		// Iterate over all constituency SVG paths using XPath to select the DOM nodes
 		final NodeList pathNodes = ((NodeList) xpath.compile("//path").evaluate(doc, XPathConstants.NODESET));
@@ -197,11 +213,11 @@ public class Main {
 	 * {@link #EMBED_IMAGE_IN_SVG} controls whether the image data gets embedded directly in the svg file
 	 * or gets linked to external image files in {@value #TARGET_OUTPUT_IMAGE_DIR}
 	 */
-	private static void generatePatternImageDefs(	final Document doc,
-													final XPath xpath,
-													final Set<String> matches,
-													final Map<String, BufferedImage> images,
-													final ElectionData electionData) throws XPathExpressionException, IOException {
+	private static void generatePatternImageDefs(final Document doc,
+												 final XPath xpath,
+												 final Set<String> matches,
+												 final Map<String, BufferedImage> images,
+												 final ElectionData electionData) throws XPathExpressionException, IOException {
 		final NodeList nodes = (NodeList) xpath.compile("//defs").evaluate(doc, XPathConstants.NODESET);
 		Node defsNode = nodes.item(0);
 		if(defsNode == null){
@@ -308,7 +324,7 @@ public class Main {
 		return images;
 	}
 
-	private static BufferedImage generateImage(ImageGenerator imageGenerator) {
+	private static BufferedImage generateImage(final ImageGenerator imageGenerator) {
 		final BufferedImage image = new BufferedImage(IMAGE_WIDTH, IMAGE_HEIGHT, BufferedImage.TYPE_INT_RGB);
 		imageGenerator.generate( image.getRaster() );
 		return image;
