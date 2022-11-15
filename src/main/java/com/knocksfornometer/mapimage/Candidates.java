@@ -19,7 +19,7 @@ public class Candidates{
 		final Candidate[] candidatesExpanded = new Candidate[100];
 		int index = 0;
 		for (Candidate candidate : candidates)
-			for (int i = 0; i < candidate.getPercentage(); i++)
+			for (int i = 0; i < candidate.getPercentageOfTotalElectorate(); i++)
 				candidatesExpanded[index++] = candidate;
 		return candidatesExpanded;
 	}
@@ -27,7 +27,7 @@ public class Candidates{
 	private Candidate[] validate(Candidate[] candidates) {
 		int totalPercentage = 0;
 		for (Candidate candidate : candidates)
-			totalPercentage += candidate.getPercentage();
+			totalPercentage += candidate.getPercentageOfTotalElectorate();
 		if(totalPercentage != 100)
 			throw new IllegalStateException("Candidates percentage should sum to 100");
 		return candidates;

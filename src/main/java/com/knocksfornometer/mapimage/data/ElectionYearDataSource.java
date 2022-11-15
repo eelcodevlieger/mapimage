@@ -10,7 +10,8 @@ public enum ElectionYearDataSource{
 	_2005ElectoralCommission(ElectionYear._2005, ElectionDataSource.ElectoralCommission),
 	_2010ElectoralCommission(ElectionYear._2010, ElectionDataSource.ElectoralCommission),
 	_2015ElectoralCommission(ElectionYear._2015, ElectionDataSource.ElectoralCommission),
-	_2017ElectoralCommission(ElectionYear._2017, ElectionDataSource.ElectoralCommission);
+	_2017ElectoralCommission(ElectionYear._2017, ElectionDataSource.ElectoralCommission),
+	_2019UkParliament(ElectionYear._2019, ElectionDataSource.UkParliament);
 
 	private static final Map<ElectionYear, List<ElectionYearDataSource>> electionYearDataSourceByYear = new EnumMap<>(ElectionYear.class);
 	static {

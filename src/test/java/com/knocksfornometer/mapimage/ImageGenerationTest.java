@@ -58,11 +58,11 @@ public class ImageGenerationTest {
 		int noVotePercentage = 100;
 		for (Candidate candidate : candidates.getCandidates()) {
 			if(candidate != noVoteCandidate) {
-				noVotePercentage -= candidate.getPercentage();
+				noVotePercentage -= candidate.getPercentageOfTotalElectorate();
 			}
 		}
 		
-		assertEquals(noVoteCandidate.getPercentage(), noVotePercentage);
+		assertEquals(noVoteCandidate.getPercentageOfTotalElectorate(), noVotePercentage);
 	}
 	
 	@Test
@@ -93,7 +93,7 @@ public class ImageGenerationTest {
 			AtomicInteger pixelColorCount = pixelColorCountMap.remove( candidate.getColor() );
 			assertNotNull(pixelColorCount, "Can't find pixelColorCount in map [candidate=" + candidate + ", pixelColorCountMap=" + pixelColorCountMap + "]");
 			int actualPixelCount = (int) (pixelColorCount.get() / (double)pixelCount * 100);
-			assertEquals(actualPixelCount, candidate.getPercentage(), "pixel percentage incorrect [candidate=" + candidate + "]");
+			assertEquals(actualPixelCount, candidate.getPercentageOfTotalElectorate(), "pixel percentage incorrect [candidate=" + candidate + "]");
 		}
 	}
 }
