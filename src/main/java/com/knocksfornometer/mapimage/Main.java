@@ -111,7 +111,7 @@ public class Main {
 
 	private static void processElectionData(final ElectionData electionData, final ElectionYearDataSource electionYearDataSource) throws Exception {
 		System.out.println("generate a 'voting distribution' image for each constituency [electionYearDataSource=" + electionYearDataSource + "]");
-		final Map<String, BufferedImage> images = generateImages(electionData.getElectionDataMap(), electionData);
+		final Map<String, BufferedImage> images = generateImages(electionData.constituencyNameToPartyCandidates(), electionData);
 
 		System.out.println("update SVG map image and save the resulting file [electionYearDataSource=" + electionYearDataSource + "]");
 		processSvg(images, electionData);
@@ -121,9 +121,9 @@ public class Main {
 	 * Read SVG -> update constituency images -> write SVG
 	 */
 	private static void processSvg(final Map<String, BufferedImage> images, final ElectionData electionData) throws SAXException, IOException, ParserConfigurationException, XPathExpressionException, TransformerException {
-		final Map<String, String> constituencyKeyNameToImageMap = images.keySet().stream().collect( Collectors.toMap(electionData.getConstituencyKeyGenerator()::toKey, Function.identity()) );
+		final Map<String, String> constituencyKeyNameToImageMap = images.keySet().stream().collect( Collectors.toMap(electionData.constituencyKeyGenerator()::toKey, Function.identity()) );
 
-		final Document doc = loadAsXmlDocument( new File(RESOURCES_DIRECTORY, electionData.getSvgMapInputFile()) );
+		final Document doc = loadAsXmlDocument( new File(RESOURCES_DIRECTORY, electionData.svgMapInputFile()) );
 
 		final XPath xpath = XPathFactory.newInstance().newXPath();
 
@@ -136,7 +136,7 @@ public class Main {
 			pathToRemove.getParentNode().removeChild(pathToRemove);
 		
 		System.out.println("SVG :: link constituency paths to images");
-		linkConstituencyPathsToImages(constituencyKeyNameToImageMap, doc, xpath, matches, noMatch, electionData.getConstituencyKeyGenerator());
+		linkConstituencyPathsToImages(constituencyKeyNameToImageMap, doc, xpath, matches, noMatch, electionData.constituencyKeyGenerator());
 
 		addXlinkNamespace(doc);
 
@@ -148,7 +148,7 @@ public class Main {
 			System.out.println("noMatch=" + noMatch);
 
 		System.out.println("SVG :: save updated file");
-		final ElectionYearDataSource source = electionData.getElectionYearDataSource();
+		final ElectionYearDataSource source = electionData.electionYearDataSource();
 		writeXmlDocumentToFile(doc, TARGET_OUTPUT_BASE_DIR + source + "\\" + source.getElectionYear().getYear() + SVG_MAP_OUTPUT_FILE);
 	}
 
@@ -232,7 +232,7 @@ public class Main {
 			//    <image x="0" y="0" height="100" width="100" xlink:href=".\constituencies\Aberavon.png"></image>
 			// </pattern>
 			final Element patternNode = doc.createElement("pattern");
-			final String constituencyNameKey = electionData.getConstituencyKeyGenerator().toKey(constituency);
+			final String constituencyNameKey = electionData.constituencyKeyGenerator().toKey(constituency);
 			patternNode.setAttribute("id", constituencyNameKey);
 			patternNode.setAttribute("patternUnits", "userSpaceOnUse");
 			patternNode.setAttribute("width", String.valueOf(IMAGE_WIDTH) );
@@ -257,7 +257,7 @@ public class Main {
 				imageNode.setAttribute("xlink:href", "data:image/gif;base64," + imgBase64Data);
 			}else{
 				//  xlink:href=".\\constituencies\${ElectionYearDataSource}\Aberavon.png"
-				final String imagePath = ".\\" + electionData.getElectionYearDataSource() + TARGET_OUTPUT_IMAGE_DIR + constituencyNameKey + TARGET_OUTPUT_IMAGE_FORMAT;
+				final String imagePath = ".\\" + electionData.electionYearDataSource() + TARGET_OUTPUT_IMAGE_DIR + constituencyNameKey + TARGET_OUTPUT_IMAGE_FORMAT;
 				imageNode.setAttribute("xlink:href", imagePath);
 			}
 			
@@ -280,13 +280,13 @@ public class Main {
 	/**
 	 * Generate the constituency voting distribution images
 	 */
-	private static Map<String, BufferedImage> generateImages(final Map<String, Candidates> constituencyParties, final ElectionData electionData) throws InterruptedException {
+	private static Map<String, BufferedImage> generateImages(final Map<String, Candidates> constituencyNameToPartyCandidates, final ElectionData electionData) throws InterruptedException {
 		final Map<String, BufferedImage> images = new ConcurrentHashMap<>();
 		final ExecutorService imageGenerationThreadPool = Executors.newFixedThreadPool(NUM_IMAGE_GENERATION_THREADS);
 		final long startTime = System.currentTimeMillis();
 		
-		// create output directory if it doesn't yet exists + clean previous output
-		final File mapImageDir = new File(TARGET_OUTPUT_BASE_DIR + electionData.getElectionYearDataSource() + TARGET_OUTPUT_IMAGE_DIR);
+		// create output directory if it doesn't yet exist + clean previous output
+		final File mapImageDir = new File(TARGET_OUTPUT_BASE_DIR + electionData.electionYearDataSource() + TARGET_OUTPUT_IMAGE_DIR);
 		mapImageDir.mkdirs();
 		for(File imageFile : mapImageDir.listFiles()) {
 			final var deleted = imageFile.delete();
@@ -295,21 +295,19 @@ public class Main {
 			}
 		}
 		
-		for (Entry<String, Candidates> entry : constituencyParties.entrySet()) {
-
+		for (Entry<String, Candidates> entry : constituencyNameToPartyCandidates.entrySet()) {
 			imageGenerationThreadPool.execute( () -> {
-				final String imgName = entry.getKey();
-				System.out.println("Generate image [imgName=" + imgName + "]");
+				final String constituencyName = entry.getKey();
+				System.out.println("Generate image [constituencyName=" + constituencyName + "]");
 				final BufferedImage image = generateImage( new ConstituencyVoteDistributionImageGeneratorExact( entry.getValue() ) );
-				final File outputImagePath = new File(mapImageDir, electionData.getConstituencyKeyGenerator().toKey(imgName) + "." + TARGET_OUTPUT_IMAGE_FORMAT);
+				final File outputImagePath = new File(mapImageDir, electionData.constituencyKeyGenerator().toKey(constituencyName) + "." + TARGET_OUTPUT_IMAGE_FORMAT);
 				try {
 					ImageIO.write(image, TARGET_OUTPUT_IMAGE_FORMAT, outputImagePath);
 				} catch (Exception e) {
 					System.err.println("Problem writing image " + e);
 				}
-				images.put(imgName, image);
+				images.put(constituencyName, image);
 			});
-			
 		}
 
 		// clean shutdown of thread pool tasks
