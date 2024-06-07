@@ -3,7 +3,6 @@ package com.knocksfornometer.mapimage;
 import java.awt.Color;
 import java.util.Collection;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
 
@@ -26,8 +25,7 @@ public class Candidate{
 	}
 
 	/**
-	 * @return Party Color as found in the {@value #CONSTITUENCY_NAME_MAPPING_FILE} config file
-	 *         or null if mapping has not been defined
+	 * @return Party Color if found, or null if mapping has not been defined
 	 */
 	private static Color getPartyColor(final String partyCode, final Map<String, String> partyColorMapping, final int percentage) {
 		final String colorCode = partyColorMapping.get( partyCode.toUpperCase() );

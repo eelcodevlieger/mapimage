@@ -33,29 +33,27 @@ public class ElectionDataManager {
 		final Map<String, String> seatNumberToConstituencyNameMapping = loadStringMapFromJsonFile( new File(RESOURCES_DIRECTORY, SEAT_TO_CONSTITUENCY_NAME_MAPPING_FILE) );
 		final ConstituencyMapping constituencyMapping = new ConstituencyMapping(PREFIXES, constituencyNameMapping, seatNumberToConstituencyNameMapping);
 
-		switch (electionYearDataSource) {
+		return switch (electionYearDataSource) {
 			case _2005ElectoralCommission -> {
 				final Map<String, String> partyColorMapping = loadStringMapFromJsonFile(new File(RESOURCES_DIRECTORY, PARTY_COLOR_MAPPING_FILE_ELECTORAL_COMMISSION_2010));
-				return new ElectionData(electionYearDataSource, _2005ElectoralCommissionElectionData.loadElectionData(partyColorMapping), _2005_SVG_MAP_INPUT_FILE, constituencyMapping);
+				yield new ElectionData(electionYearDataSource, _2005ElectoralCommissionElectionData.loadElectionData(partyColorMapping), _2005_SVG_MAP_INPUT_FILE, constituencyMapping);
 			}
 			case _2010ElectoralCommission -> {
 				final Map<String, String> partyColorMapping = loadStringMapFromJsonFile(new File(RESOURCES_DIRECTORY, PARTY_COLOR_MAPPING_FILE_ELECTORAL_COMMISSION_2010));
-				return new ElectionData(electionYearDataSource, _2010ElectoralCommissionElectionData.loadElectionData(partyColorMapping), _2010_SVG_MAP_INPUT_FILE, constituencyMapping);
+				yield new ElectionData(electionYearDataSource, _2010ElectoralCommissionElectionData.loadElectionData(partyColorMapping), _2010_SVG_MAP_INPUT_FILE, constituencyMapping);
 			}
 			case _2015ElectoralCommission -> {
 				final Map<String, String> partyColorMapping = loadStringMapFromJsonFile(new File(RESOURCES_DIRECTORY, PARTY_COLOR_MAPPING_FILE_ELECTORAL_COMMISSION_2015));
-				return new ElectionData(electionYearDataSource, _2015ElectoralCommissionElectionData.loadElectionData(partyColorMapping), _2015_SVG_MAP_INPUT_FILE, constituencyMapping);
+				yield new ElectionData(electionYearDataSource, _2015ElectoralCommissionElectionData.loadElectionData(partyColorMapping), _2015_SVG_MAP_INPUT_FILE, constituencyMapping);
 			}
 			case _2017ElectoralCommission -> {
 				final Map<String, String> partyColorMapping = loadStringMapFromJsonFile(new File(RESOURCES_DIRECTORY, PARTY_COLOR_MAPPING_FILE_ELECTORAL_COMMISSION_2017));
-				return new ElectionData(electionYearDataSource, _2017ElectoralCommissionElectionData.loadElectionData(partyColorMapping), _2017_SVG_MAP_INPUT_FILE, constituencyMapping);
+				yield new ElectionData(electionYearDataSource, _2017ElectoralCommissionElectionData.loadElectionData(partyColorMapping), _2017_SVG_MAP_INPUT_FILE, constituencyMapping);
 			}
 			case _2019UkParliament -> {
 				final Map<String, String> partyColorMapping = loadStringMapFromJsonFile(new File(RESOURCES_DIRECTORY, PARTY_COLOR_MAPPING_FILE_UK_PARLIAMENT_2019));
-				return new ElectionData(electionYearDataSource, _2019UkParliamentElectionData.loadElectionData(partyColorMapping), _2019_SVG_MAP_INPUT_FILE, constituencyMapping);
+				yield new ElectionData(electionYearDataSource, _2019UkParliamentElectionData.loadElectionData(partyColorMapping), _2019_SVG_MAP_INPUT_FILE, constituencyMapping);
 			}
-			default ->
-					throw new RuntimeException("Unmapped electionYearDataSource [electionYearDataSource=" + electionYearDataSource + "]");
-		}
+		};
 	}
 }
