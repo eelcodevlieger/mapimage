@@ -10,7 +10,7 @@ public enum ElectionYear {
 			System.err.println("Invalid enum name year format");
 			System.exit(-1);
 		}
-		this.year = Integer.valueOf(this.name().substring(1));
+		this.year = Integer.parseInt(this.name().substring(1));
 	}
 	
 	public int getYear() {
