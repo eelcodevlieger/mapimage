@@ -17,3 +17,7 @@ Existing election result maps did not really show the subtlety in individual vot
 
 sample constituency voting pattern images:
 ![image](https://github.com/eelcodevlieger/mapimage/assets/44651943/c01d5a93-e18d-49d0-a528-e896d9b45b4e)
+
+## result
+Voting pattern changes in 4 successive UK General elections:
+![2005 - 2017 UKElectionMap_votes](https://github.com/eelcodevlieger/mapimage/assets/44651943/9962652b-32af-415f-b942-ea986d810db1)
