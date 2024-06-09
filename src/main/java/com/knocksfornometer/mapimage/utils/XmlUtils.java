@@ -1,4 +1,4 @@
-package com.knocksfornometer.mapimage.xml;
+package com.knocksfornometer.mapimage.utils;
 
 import java.io.File;
 import java.io.IOException;

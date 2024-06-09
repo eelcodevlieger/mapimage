@@ -1,9 +1,8 @@
-package com.knocksfornometer.mapimage.data;
+package com.knocksfornometer.mapimage.domain;
 
 import java.util.Map;
 
-import com.knocksfornometer.mapimage.Candidates;
-import com.knocksfornometer.mapimage.ConstituencyKeyGenerator;
+import com.knocksfornometer.mapimage.data.ElectionYearDataSource;
 
 /**
  * @author Eelco de Vlieger

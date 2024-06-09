@@ -3,9 +3,10 @@ package com.knocksfornometer.mapimage.imagegeneration;
 import java.awt.Color;
 import java.awt.image.WritableRaster;
 
-import com.knocksfornometer.mapimage.Candidate;
-import com.knocksfornometer.mapimage.Candidates;
-import com.knocksfornometer.mapimage.utils.collections.CollectionUtils;
+import com.knocksfornometer.mapimage.domain.Candidate;
+import com.knocksfornometer.mapimage.domain.Candidates;
+import com.knocksfornometer.mapimage.utils.CollectionUtils;
+import lombok.AllArgsConstructor;
 
 /**
  * Generate a 'voting distribution' image.
@@ -14,13 +15,10 @@ import com.knocksfornometer.mapimage.utils.collections.CollectionUtils;
  * 
  * @author Eelco de Vlieger
  */
+@AllArgsConstructor
 public class ConstituencyVoteDistributionImageGeneratorExact implements ImageGenerator {
 
 	private final Candidates candidates;
-
-	public ConstituencyVoteDistributionImageGeneratorExact(Candidates candidates) {
-		this.candidates = candidates;
-	}
 
 	@Override
 	public void generate(WritableRaster raster) {

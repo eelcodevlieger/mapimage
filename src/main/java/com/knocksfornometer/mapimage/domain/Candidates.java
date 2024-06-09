@@ -1,12 +1,16 @@
-package com.knocksfornometer.mapimage;
+package com.knocksfornometer.mapimage.domain;
+
+import lombok.Getter;
 
 import java.util.Arrays;
 import java.util.Random;
 
 public class Candidates{
 
+	@Getter
 	private final Candidate[] candidates;
 	/** Candidates representation percentage as array of size 100 (filled with {@link Candidate} references by that ratio) */
+	@Getter
 	private final Candidate[] candidatesExpanded;
     private final Random random = new Random();
 	
@@ -31,14 +35,6 @@ public class Candidates{
 		if(totalPercentage != 100)
 			throw new IllegalStateException("Candidates percentage should sum to 100");
 		return candidates;
-	}
-
-	public Candidate[] getCandidates() {
-		return candidates;
-	}
-
-	public Candidate[] getCandidatesExpanded() {
-		return candidatesExpanded;
 	}
 
 	public Candidate getNextCandidate() {

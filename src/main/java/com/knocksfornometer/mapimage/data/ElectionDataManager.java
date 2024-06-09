@@ -1,6 +1,6 @@
 package com.knocksfornometer.mapimage.data;
 
-import static com.knocksfornometer.mapimage.json.JsonUtils.loadStringMapFromJsonFile;
+import static com.knocksfornometer.mapimage.utils.JsonUtils.loadStringMapFromJsonFile;
 
 import java.io.File;
 import java.util.Map;
@@ -10,6 +10,8 @@ import com.knocksfornometer.mapimage.data._2010.electoralcommission._2010Elector
 import com.knocksfornometer.mapimage.data._2015.electoralcommission._2015ElectoralCommissionElectionData;
 import com.knocksfornometer.mapimage.data._2017.electoralcommission._2017ElectoralCommissionElectionData;
 import com.knocksfornometer.mapimage.data._2019.ukparliament._2019UkParliamentElectionData;
+import com.knocksfornometer.mapimage.domain.ConstituencyMapping;
+import com.knocksfornometer.mapimage.domain.ElectionData;
 
 public class ElectionDataManager {
 	

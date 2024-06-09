@@ -2,7 +2,7 @@ package com.knocksfornometer.mapimage.data._2005.electoralcommission;
 
 import java.util.Map;
 
-import com.knocksfornometer.mapimage.Candidates;
+import com.knocksfornometer.mapimage.domain.Candidates;
 import com.knocksfornometer.mapimage.data.electoralcommission.ElectoralCommissionElectionData;
 
 /**

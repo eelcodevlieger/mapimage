@@ -19,8 +19,8 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ListMultimap;
-import com.knocksfornometer.mapimage.Candidate;
-import com.knocksfornometer.mapimage.Candidates;
+import com.knocksfornometer.mapimage.domain.Candidate;
+import com.knocksfornometer.mapimage.domain.Candidates;
 
 /**
  * 
