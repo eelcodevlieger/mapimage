@@ -1,21 +1,17 @@
-package com.knocksfornometer.mapimage.data;
+package com.knocksfornometer.mapimage.domain;
 
 import java.util.Map;
 
-import com.knocksfornometer.mapimage.ConstituencyKeyGenerator;
+import com.knocksfornometer.mapimage.domain.ConstituencyKeyGenerator;
+import lombok.AllArgsConstructor;
 
+@AllArgsConstructor
 public class ConstituencyMapping implements ConstituencyKeyGenerator{
 
 	private final String[] prefixes;
 	private final Map<String, String> constituencyNameMapping;
 	private final Map<String, String> seatNumberToConstituencyNameMapping;
 
-	public ConstituencyMapping(final String[] prefixes, final Map<String, String> constituencyNameMapping, final Map<String, String> seatNumberToConstituencyNameMapping) {
-		this.prefixes = prefixes;
-		this.constituencyNameMapping = constituencyNameMapping;
-		this.seatNumberToConstituencyNameMapping = seatNumberToConstituencyNameMapping;
-	}
-	
 	/**
 	 * Builds a key from the constituencyName, converting to UPPERCASE ASCII and removing spaces.
 	 * {@link #prefixes} holds a list of prefixes which will be changed to suffix in the key (WESTBRISTOL -> BRISTOLWEST).

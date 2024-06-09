@@ -2,8 +2,8 @@ package com.knocksfornometer.mapimage.data._2019.ukparliament;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import com.knocksfornometer.mapimage.Candidate;
-import com.knocksfornometer.mapimage.Candidates;
+import com.knocksfornometer.mapimage.domain.Candidate;
+import com.knocksfornometer.mapimage.domain.Candidates;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -83,7 +83,6 @@ public class _2019UkParliamentElectionData {
 	    		.stream()
 	    		.collect(Collectors.toMap(Entry::getKey,
 	    				entry -> {
-
 	    					final Collection<Candidate> candidates = entry.getValue();
 	    					final Candidate candidateAndNotVoted = Candidate.createNoVoteCandidate(candidates);
 	    					final Candidate[] candidatesAndNotVoted = candidates.toArray(new Candidate[candidates.size() + 1]);

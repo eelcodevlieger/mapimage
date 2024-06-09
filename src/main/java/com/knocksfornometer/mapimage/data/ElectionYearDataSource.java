@@ -1,10 +1,9 @@
 package com.knocksfornometer.mapimage.data;
 
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import com.knocksfornometer.mapimage.domain.ElectionYear;
+
+import java.util.*;
 
 public enum ElectionYearDataSource{
 	_2005ElectoralCommission(ElectionYear._2005, ElectionDataSource.ElectoralCommission),
@@ -30,7 +29,7 @@ public enum ElectionYearDataSource{
 	private final ElectionDataSource electionDataSource;
 
 
-	ElectionYearDataSource(ElectionYear electionYear, ElectionDataSource electionDataSource){
+	ElectionYearDataSource(final ElectionYear electionYear, final ElectionDataSource electionDataSource){
 		this.electionYear = electionYear;
 		this.electionDataSource = electionDataSource;
 	}
@@ -46,4 +45,21 @@ public enum ElectionYearDataSource{
 	public ElectionDataSource getElectionDataSource() {
 		return electionDataSource;
 	}
+
+	/**
+	 * Default to all ElectionYearDataSource values when no specific ones are requested.
+	 */
+	public static ElectionYearDataSource[] getElectionYearDataSources(final String... electionYears) {
+		if(electionYears == null || electionYears.length == 0){
+			return ElectionYearDataSource.values();
+		}
+
+		return Arrays.stream(electionYears)
+				.map(Integer::valueOf)
+				.map(ElectionYear::get)
+				.map(ElectionYearDataSource::getElectionYearDataSourceByYear)
+				.flatMap(Collection::stream)
+				.toArray(ElectionYearDataSource[]::new);
+	}
+
 }

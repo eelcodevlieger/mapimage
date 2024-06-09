@@ -1,4 +1,4 @@
-package com.knocksfornometer.mapimage.data;
+package com.knocksfornometer.mapimage.domain;
 
 public enum ElectionYear {
 	_2005, _2010, _2015, _2017, _2019;

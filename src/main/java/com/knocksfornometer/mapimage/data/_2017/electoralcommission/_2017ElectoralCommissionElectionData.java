@@ -15,8 +15,8 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import com.knocksfornometer.mapimage.Candidate;
-import com.knocksfornometer.mapimage.Candidates;
+import com.knocksfornometer.mapimage.domain.Candidate;
+import com.knocksfornometer.mapimage.domain.Candidates;
 
 /**
  * 

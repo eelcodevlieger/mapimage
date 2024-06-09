@@ -1,4 +1,4 @@
-package com.knocksfornometer.mapimage;
+package com.knocksfornometer.mapimage.domain;
 
 import java.awt.Color;
 import java.util.Collection;
