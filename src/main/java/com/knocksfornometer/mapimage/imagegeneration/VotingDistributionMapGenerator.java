@@ -142,43 +142,58 @@ public class VotingDistributionMapGenerator {
             root.appendChild(defsNode);
         }
 
+        var imgWidth = String.valueOf(imageWidth);
+        var imgHeight = String.valueOf(imageHeight);
+
         for (String constituency : matches) {
-            // <pattern id="Aberavon" patternUnits="userSpaceOnUse" height="100" width="100">
-            //    <image x="0" y="0" height="100" width="100" xlink:href=".\constituencies\Aberavon.png"></image>
-            // </pattern>
-            final Element patternNode = doc.createElement("pattern");
-            final String constituencyNameKey = electionData.constituencyKeyGenerator().toKey(constituency);
-            patternNode.setAttribute("id", constituencyNameKey);
-            patternNode.setAttribute("patternUnits", "userSpaceOnUse");
-            patternNode.setAttribute("width", String.valueOf(imageWidth) );
-            patternNode.setAttribute("height", String.valueOf(imageHeight));
-
-            final Element imageNode = doc.createElement("image");
-            imageNode.setAttribute("x", "0");
-            imageNode.setAttribute("y", "0");
-            imageNode.setAttribute("width", String.valueOf(imageWidth));
-            imageNode.setAttribute("height", String.valueOf(imageHeight));
-
-            if(embedImageInSvg){
-                //xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="
-                final BufferedImage image = images.get(constituency);
-                final String imgBase64Data;
-                try(ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()){
-                    // embed image data as base64 GIF
-                    ImageIO.write(image, "gif", byteArrayOutputStream);
-                    imgBase64Data = Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray());
-                }
-
-                imageNode.setAttribute("xlink:href", "data:image/gif;base64," + imgBase64Data);
-            }else{
-                //  xlink:href=".\\constituencies\${ElectionYearDataSource}\Aberavon.png"
-                final String imagePath = ".\\" + electionData.electionYearDataSource() + targetOutputImageDir + constituencyNameKey + targetOutputImageFormat;
-                imageNode.setAttribute("xlink:href", imagePath);
-            }
-
-            patternNode.appendChild(imageNode);
+            final Element patternNode = createSvgPattern(doc, images, electionData, constituency, imgWidth, imgHeight);
             defsNode.appendChild(patternNode);
         }
+    }
+
+    /**
+     * Example pattern element node
+     * {@literal
+     *   <pattern id="Aberavon" patternUnits="userSpaceOnUse" height="100" width="100" patternTransform="scale(0.2)">
+     *       <image x="0" y="0" height="100" width="100" xlink:href=".\constituencies\Aberavon.png"></image>
+     *   </pattern>
+     * }
+     */
+    private Element createSvgPattern(Document doc, Map<String, BufferedImage> images, ElectionData electionData, String constituency, String imgWidth, String imgHeight) throws IOException {
+        final String constituencyNameKey = electionData.constituencyKeyGenerator().toKey(constituency);
+
+        final Element patternNode = doc.createElement("pattern");
+        patternNode.setAttribute("id", constituencyNameKey);
+        patternNode.setAttribute("patternUnits", "userSpaceOnUse");
+        patternNode.setAttribute("width", imgWidth);
+        patternNode.setAttribute("height", imgHeight);
+        patternNode.setAttribute("patternTransform", "scale(0.2)");
+
+        final Element imageNode = doc.createElement("image");
+        imageNode.setAttribute("x", "0");
+        imageNode.setAttribute("y", "0");
+        imageNode.setAttribute("width", imgWidth);
+        imageNode.setAttribute("height", imgHeight);
+
+        if(embedImageInSvg){
+            //xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="
+            final BufferedImage image = images.get(constituency);
+            final String imgBase64Data;
+            try(ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()){
+                // embed image data as base64 GIF
+                ImageIO.write(image, "gif", byteArrayOutputStream);
+                imgBase64Data = Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray());
+            }
+
+            imageNode.setAttribute("xlink:href", "data:image/gif;base64," + imgBase64Data);
+        }else{
+            //  xlink:href=".\\constituencies\${ElectionYearDataSource}\Aberavon.png"
+            final String imagePath = ".\\" + electionData.electionYearDataSource() + targetOutputImageDir + constituencyNameKey + targetOutputImageFormat;
+            imageNode.setAttribute("xlink:href", imagePath);
+        }
+
+        patternNode.appendChild(imageNode);
+        return patternNode;
     }
 
     /**
@@ -186,9 +201,8 @@ public class VotingDistributionMapGenerator {
      * xmlns:xlink="http://www.w3.org/1999/xlink"
      */
     private void addXlinkNamespace(final Document doc) {
-        final Element root = doc.getDocumentElement();
         final Attr attr = doc.createAttribute("xmlns:xlink");
         attr.setValue("http://www.w3.org/1999/xlink");
-        root.setAttributeNodeNS(attr);
+        doc.getDocumentElement().setAttributeNodeNS(attr);
     }
 }
