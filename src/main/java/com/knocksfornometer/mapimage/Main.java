@@ -42,8 +42,8 @@ public class Main {
 	private static final String TARGET_OUTPUT_BASE_DIR = "target\\map\\";
 	private static final String TARGET_OUTPUT_IMAGE_DIR = "\\constituencies\\";
 	private static final String SVG_MAP_OUTPUT_FILE = "UKElectionMap_votes.svg";
-	private static final int IMAGE_WIDTH = 100;
-	private static final int IMAGE_HEIGHT = 100;
+	private static final int IMAGE_WIDTH = 300;
+	private static final int IMAGE_HEIGHT = 300;
 	
 	/**
 	 * If true  - the image data gets embedded directly in the SVG file (base64 encoded).
