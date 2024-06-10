@@ -6,6 +6,7 @@ import com.knocksfornometer.mapimage.data.ElectionYearDataSource;
 import com.knocksfornometer.mapimage.imagegeneration.ImageGenerator;
 import com.knocksfornometer.mapimage.imagegeneration.VotingDistributionImagesGenerator;
 import com.knocksfornometer.mapimage.imagegeneration.VotingDistributionMapGenerator;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -55,31 +56,20 @@ public class Main {
 	public static void main(final String... args) throws Exception {
 		for(ElectionYearDataSource electionYearDataSource : ElectionYearDataSource.getElectionYearDataSources(args)) {
 			System.out.println("Loading election data [electionYearDataSource=" + electionYearDataSource + "]");
-			ElectionData electionData = ElectionDataManager.getElectionData(electionYearDataSource);
-			processElectionData(electionData, electionYearDataSource);
+			var electionData = ElectionDataManager.getElectionData(electionYearDataSource);
+
+			System.out.println("Generate a 'voting distribution' image for each constituency [electionYearDataSource=" + electionYearDataSource + "]");
+			var votingDistributionImagesGenerator = new VotingDistributionImagesGenerator(TARGET_OUTPUT_BASE_DIR, TARGET_OUTPUT_IMAGE_DIR, TARGET_OUTPUT_IMAGE_FORMAT, IMAGE_WIDTH, IMAGE_HEIGHT);
+			var patternImages = votingDistributionImagesGenerator.generateImages(electionData);
+
+			System.out.println("Update SVG map image and save the resulting file [electionYearDataSource=" + electionYearDataSource + "]");
+			var votingDistributionMapGenerator = new VotingDistributionMapGenerator(TARGET_OUTPUT_IMAGE_DIR, TARGET_OUTPUT_IMAGE_FORMAT, IMAGE_WIDTH, IMAGE_HEIGHT, EMBED_IMAGE_IN_SVG);
+			var votingDistributionMap = votingDistributionMapGenerator.generate(patternImages, electionData);;
+
+			System.out.println("Save generate voting distribution map to file");
+			writeXmlDocumentToFile(votingDistributionMap, TARGET_OUTPUT_BASE_DIR + electionData.electionYearDataSource() + "\\" + electionData.electionYearDataSource().getElectionYear().getYear() + SVG_MAP_OUTPUT_FILE);
 		}
 		
 		System.out.println("Completed");
-	}
-
-	private static void processElectionData(final ElectionData electionData, final ElectionYearDataSource electionYearDataSource) throws Exception {
-		System.out.println("generate a 'voting distribution' image for each constituency [electionYearDataSource=" + electionYearDataSource + "]");
-		var votingDistributionImagesGenerator = new VotingDistributionImagesGenerator(TARGET_OUTPUT_BASE_DIR, TARGET_OUTPUT_IMAGE_DIR, TARGET_OUTPUT_IMAGE_FORMAT, IMAGE_WIDTH, IMAGE_HEIGHT);
-		final Map<String, BufferedImage> images = votingDistributionImagesGenerator.generateImages(electionData);
-
-		System.out.println("update SVG map image and save the resulting file [electionYearDataSource=" + electionYearDataSource + "]");
-		processSvg(images, electionData);
-	}
-
-	/**
-	 * Read SVG -> update constituency images -> write SVG
-	 */
-	private static void processSvg(final Map<String, BufferedImage> images, final ElectionData electionData) throws SAXException, IOException, ParserConfigurationException, XPathExpressionException, TransformerException {
-		var votingDistributionMapGenerator = new VotingDistributionMapGenerator(TARGET_OUTPUT_IMAGE_DIR, TARGET_OUTPUT_IMAGE_FORMAT, IMAGE_WIDTH, IMAGE_HEIGHT, EMBED_IMAGE_IN_SVG);
-		var svgMapDocument = votingDistributionMapGenerator.generate(images, electionData);
-
-		System.out.println("SVG :: save updated file");
-		final ElectionYearDataSource source = electionData.electionYearDataSource();
-		writeXmlDocumentToFile(svgMapDocument, TARGET_OUTPUT_BASE_DIR + source + "\\" + source.getElectionYear().getYear() + SVG_MAP_OUTPUT_FILE);
 	}
 }
