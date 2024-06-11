@@ -21,3 +21,11 @@ jobs:
       with:
         name: jar
         path: /home/runner/work/mapimage/mapimage/target/mapimage*.jar
+    - name: Report
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: Maven Tests
+        path: target/surefire-reports/*.xml
+        reporter: java-junit
+        fail-on-error: true
