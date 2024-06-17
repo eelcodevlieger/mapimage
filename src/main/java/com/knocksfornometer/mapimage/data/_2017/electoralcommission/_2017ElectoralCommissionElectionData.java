@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import com.knocksfornometer.mapimage.data.ElectionDataLoader;
+import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -22,11 +24,12 @@ import com.knocksfornometer.mapimage.domain.Candidates;
  * 
  * @author Eelco de Vlieger
  */
-public class _2017ElectoralCommissionElectionData {
+public class _2017ElectoralCommissionElectionData implements ElectionDataLoader {
 
 	private static final String INPUT_DATA_FILE = "src\\main\\resources\\election_data\\2017\\electoral_commission\\2017-UKPGE-Electoral-Data.xls";
 	
-	public static Map<String, Candidates> loadElectionData(Map<String, String> partyColorMapping) throws Exception {
+	@SneakyThrows
+	public Map<String, Candidates> apply(Map<String, String> partyColorMapping) {
 		final Workbook workBook;
 		try(InputStream inputStream = new FileInputStream(INPUT_DATA_FILE)){
 			workBook = WorkbookFactory.create(inputStream);

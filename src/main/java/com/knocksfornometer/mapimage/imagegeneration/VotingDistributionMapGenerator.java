@@ -57,8 +57,9 @@ public class VotingDistributionMapGenerator {
         generatePatternImageDefs(svgMapDocument, xpath, matches, images, electionData);
 
         System.out.println("constituency names matching results [match=" + matches.size() + ", noMatch=" + noMatch.size() + "]");
-        if(noMatch.size() > 0)
+        if(!noMatch.isEmpty()) {
             System.out.println("noMatch=" + noMatch);
+        }
 
         return svgMapDocument;
     }
@@ -66,8 +67,9 @@ public class VotingDistributionMapGenerator {
     private static void clean(XPath xpath, Document svgMapDocument) throws XPathExpressionException {
         // specific 'hack' to remove a rogue path from the input SVG
         final Node pathToRemove = ((NodeList) xpath.compile("//*[@id='path717']").evaluate(svgMapDocument, XPathConstants.NODESET)).item(0);
-        if(pathToRemove != null)
+        if(pathToRemove != null) {
             pathToRemove.getParentNode().removeChild(pathToRemove);
+        }
     }
 
     /**
