@@ -2,8 +2,10 @@ package com.knocksfornometer.mapimage.data._2019.ukparliament;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
+import com.knocksfornometer.mapimage.data.ElectionDataLoader;
 import com.knocksfornometer.mapimage.domain.Candidate;
 import com.knocksfornometer.mapimage.domain.Candidates;
+import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -15,19 +17,21 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
  * 
  * @author Eelco de Vlieger
  */
-public class _2019UkParliamentElectionData {
+public class _2019UkParliamentElectionData implements ElectionDataLoader {
 
 	/** using result 'by candidates' file, rather than 'by constituency', because the latter doesn't detail the smaller political parties */
 	private static final String INPUT_DATA_FILE_RESULTS_BY_CANDIDATE = "src\\main\\resources\\election_data\\2019\\uk_parliament\\HoC-GE2019-results-by-candidate-xlsx.xlsx";
 	private static final String INPUT_DATA_FILE_RESULTS_BY_CONSTITUENCY = "src\\main\\resources\\election_data\\2019\\uk_parliament\\HoC-GE2019-results-by-constituency-xlsx.xlsx";
 
-	public static Map<String, Candidates> loadElectionData(final Map<String, String> partyColorMapping) throws Exception {
+	@SneakyThrows
+	public Map<String, Candidates> apply(final Map<String, String> partyColorMapping) {
 		final Workbook resultsByCandidateWorkBook;
 		try(InputStream inputStream = new FileInputStream(INPUT_DATA_FILE_RESULTS_BY_CANDIDATE)){
 			resultsByCandidateWorkBook = WorkbookFactory.create(inputStream);

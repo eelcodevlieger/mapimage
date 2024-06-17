@@ -26,7 +26,7 @@ public class VotingDistributionImagesGenerator {
     private final int imageHeight;
 
     public Map<String, BufferedImage> generateImages(final ElectionData electionData) throws InterruptedException {
-        final Map<String, Candidates> constituencyNameToPartyCandidates = electionData.constituencyNameToPartyCandidates();
+        final Map<String, Candidates> constituencyNameToPartyCandidates = electionData.electionYearDataSource().getElectionDataLoader().apply(electionData.partyColorMapping());
         final ExecutorService imageGenerationThreadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         final long startTime = System.currentTimeMillis();
 

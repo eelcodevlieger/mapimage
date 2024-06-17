@@ -8,7 +8,7 @@ import com.knocksfornometer.mapimage.data.ElectionYearDataSource;
  * @author Eelco de Vlieger
  */
 public record ElectionData(ElectionYearDataSource electionYearDataSource,
-						   Map<String, Candidates> constituencyNameToPartyCandidates,
+						   Map<String, String> partyColorMapping,
 						   String svgMapInputFile,
 						   ConstituencyKeyGenerator constituencyKeyGenerator) {
 
