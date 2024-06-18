@@ -24,9 +24,8 @@ Voting pattern changes in 4 successive UK General elections:
 ![2005 - 2017 UKElectionMap_votes](https://github.com/eelcodevlieger/mapimage/assets/44651943/9962652b-32af-415f-b942-ea986d810db1)
 
 ## input map sources
-
- * https://en.wikipedia.org/wiki/File:2019UKElectionMap.svg (license: CC BY-SA 4.0)
- * https://en.wikipedia.org/wiki/File:2017UKElectionMap.svg (license: CC BY-SA 4.0)
- * https://commons.wikimedia.org/wiki/File:2015UKElectionMap.svg (license: CC BY-SA 4.0)
- * https://en.wikipedia.org/wiki/File:2010UKElectionMap.svg (public domain)
- * https://en.wikipedia.org/wiki/File:2005UKElectionMap.svg (public domain)
+ * 2019: https://en.wikipedia.org/wiki/File:2019UKElectionMap.svg (license: CC BY-SA 4.0)
+ * 2017: https://en.wikipedia.org/wiki/File:2017UKElectionMap.svg (license: CC BY-SA 4.0)
+ * 2015: https://commons.wikimedia.org/wiki/File:2015UKElectionMap.svg (license: CC BY-SA 4.0)
+ * 2010: https://en.wikipedia.org/wiki/File:2010UKElectionMap.svg (public domain)
+ * 2005: https://en.wikipedia.org/wiki/File:2005UKElectionMap.svg (public domain)
