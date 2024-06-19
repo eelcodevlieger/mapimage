@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import com.knocksfornometer.mapimage.data.ElectionDataLoader;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -24,6 +25,7 @@ import com.knocksfornometer.mapimage.domain.Candidates;
  * 
  * @author Eelco de Vlieger
  */
+@Slf4j
 public class _2017ElectoralCommissionElectionData implements ElectionDataLoader {
 
 	private static final String INPUT_DATA_FILE = "src\\main\\resources\\election_data\\2017\\electoral_commission\\2017-UKPGE-Electoral-Data.xls";
@@ -78,7 +80,7 @@ public class _2017ElectoralCommissionElectionData implements ElectionDataLoader 
 	    	final long numVotes = Math.round(row.getCell(7).getNumericCellValue());
 			final Long electorateSize = electorateSizeData.get( toKey(constituencyName) );
 			if(electorateSize == null) {
-				System.err.println("No electorate size data found [constituencyName=" + constituencyName + "]");
+                log.error("No electorate size data found [constituencyName={}]", constituencyName);
 				continue;
 			}
 			final int percentageOfTotalElectorate = (int) Math.round(100.0 / (electorateSize / (double) numVotes));

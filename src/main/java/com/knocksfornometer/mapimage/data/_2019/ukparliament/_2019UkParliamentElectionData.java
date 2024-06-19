@@ -6,6 +6,7 @@ import com.knocksfornometer.mapimage.data.ElectionDataLoader;
 import com.knocksfornometer.mapimage.domain.Candidate;
 import com.knocksfornometer.mapimage.domain.Candidates;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
  * 
  * @author Eelco de Vlieger
  */
+@Slf4j
 public class _2019UkParliamentElectionData implements ElectionDataLoader {
 
 	/** using result 'by candidates' file, rather than 'by constituency', because the latter doesn't detail the smaller political parties */
@@ -43,7 +45,6 @@ public class _2019UkParliamentElectionData implements ElectionDataLoader {
 		final Map<String, Long> electorateSizeData = loadElectorateSizeData(resultsByConstituencyWorkBook);
 		return loadElectionData(resultsByCandidateWorkBook, partyColorMapping, electorateSizeData);
 	}
-
 
 	/**
 	 * @param workBook
@@ -74,7 +75,7 @@ public class _2019UkParliamentElectionData implements ElectionDataLoader {
 
 			final Long electorateSize = electorateSizeData.get( toKey(constituencyName) );
 			if(electorateSize == null) {
-				System.err.println("No electorate size data found [constituencyName=" + constituencyName + "]");
+                log.error("No electorate size data found [constituencyName={}]", constituencyName);
 				continue;
 			}
 			final int percentageOfTotalElectorate = (int) Math.round(100.0 / (electorateSize / numVotes));

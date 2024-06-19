@@ -5,11 +5,14 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.google.common.base.Preconditions;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class Candidate{
 
 	private static final Color PARTY_COLOR_OTHER = Color.WHITE;
 	private static final Color PARTY_COLOR_NO_VOTE = Color.BLACK;
+	private static final int PARTY_UNMAPPED_PERCENTAGE_THRESHOLD_WARN = 5;
 
 	private final Color partyColor;
 	private final int percentageOfTotalElectorate;
@@ -31,7 +34,11 @@ public class Candidate{
 		final String colorCode = partyColorMapping.get( partyCode.toUpperCase() );
 		final Color partyColor;
 		if(colorCode == null) {
-			(percentage > 5 ? System.err : System.out).println("Party unmapped [partyCode=" + partyCode + "]");
+			if(percentage > PARTY_UNMAPPED_PERCENTAGE_THRESHOLD_WARN){
+                log.warn("Party unmapped [partyCode={}]", partyCode);
+			}else{
+				log.debug("Party unmapped [partyCode={}]", partyCode);
+			}
 			partyColor = PARTY_COLOR_OTHER;
 		} else {
 			partyColor = Color.decode(colorCode);

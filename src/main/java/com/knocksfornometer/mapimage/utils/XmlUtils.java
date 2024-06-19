@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -18,13 +17,13 @@ import org.xml.sax.SAXException;
 public class XmlUtils {
 
 	public static Document loadAsXmlDocument(File xmlFile) throws SAXException, IOException, ParserConfigurationException {
-		DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+		var domFactory = DocumentBuilderFactory.newInstance();
 		return domFactory.newDocumentBuilder().parse(xmlFile.getAbsolutePath());
 	}
 
-	public static void writeXmlDocumentToFile(Document doc, String fileName) throws TransformerFactoryConfigurationError, TransformerException {
-		TransformerFactory transformerFactory = TransformerFactory.newInstance();
-		Transformer transformer = transformerFactory.newTransformer();
-		transformer.transform(new DOMSource(doc), new StreamResult( new File(fileName) ));
+	public static void writeXmlDocumentToFile(Document doc, final File svgOutputFile) throws TransformerFactoryConfigurationError, TransformerException {
+		var transformerFactory = TransformerFactory.newInstance();
+		var transformer = transformerFactory.newTransformer();
+		transformer.transform(new DOMSource(doc), new StreamResult(svgOutputFile));
 	}
 }
