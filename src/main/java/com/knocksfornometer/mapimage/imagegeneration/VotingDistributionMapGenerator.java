@@ -3,6 +3,7 @@ package com.knocksfornometer.mapimage.imagegeneration;
 import com.knocksfornometer.mapimage.domain.ConstituencyKeyGenerator;
 import com.knocksfornometer.mapimage.domain.ElectionData;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -26,6 +27,7 @@ import static com.knocksfornometer.mapimage.utils.XmlUtils.loadAsXmlDocument;
  * Generates an SVG map image of the UK - displaying the coting distribution of each constituency area.
  */
 @AllArgsConstructor
+@Slf4j
 public class VotingDistributionMapGenerator {
     private static final File RESOURCES_DIRECTORY = new File("src\\main\\resources");
 
@@ -48,17 +50,17 @@ public class VotingDistributionMapGenerator {
 
         clean(xpath, svgMapDocument);
 
-        System.out.println("SVG :: link constituency paths to images");
+        log.info("SVG :: link constituency paths to images");
         linkConstituencyPathsToImages(constituencyKeyNameToImageMap, svgMapDocument, xpath, matches, noMatch, electionData.constituencyKeyGenerator());
 
         addXlinkNamespace(svgMapDocument);
 
-        System.out.println("SVG :: generate pattern image definitions");
+        log.info("SVG :: generate pattern image definitions");
         generatePatternImageDefs(svgMapDocument, xpath, matches, images, electionData);
 
-        System.out.println("constituency names matching results [match=" + matches.size() + ", noMatch=" + noMatch.size() + "]");
+        log.info("constituency names matching results [match={}, noMatch={}]", matches.size(), noMatch.size());
         if(!noMatch.isEmpty()) {
-            System.out.println("noMatch=" + noMatch);
+            log.warn("Some constituency names failed to match [noMatch={}]", noMatch);
         }
 
         return svgMapDocument;

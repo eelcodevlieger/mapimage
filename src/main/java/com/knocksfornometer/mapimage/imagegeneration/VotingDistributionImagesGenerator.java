@@ -3,6 +3,7 @@ package com.knocksfornometer.mapimage.imagegeneration;
 import com.knocksfornometer.mapimage.domain.Candidates;
 import com.knocksfornometer.mapimage.domain.ElectionData;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -17,6 +18,7 @@ import java.util.concurrent.TimeUnit;
  * Generate the constituency voting distribution images
  */
 @AllArgsConstructor
+@Slf4j
 public class VotingDistributionImagesGenerator {
 
     private final String targetOutputBaseDir;
@@ -38,20 +40,21 @@ public class VotingDistributionImagesGenerator {
         for(File imageFile : mapImageDir.listFiles()) {
             final var deleted = imageFile.delete();
             if(!deleted){
-                System.err.println("Failed to delete file: " + imageFile);
+                log.error("Failed to delete [imageFile={}]", imageFile);
             }
         }
 
+        log.info("Generate fill pattern images for constituency");
         for (Map.Entry<String, Candidates> entry : constituencyNameToPartyCandidates.entrySet()) {
             imageGenerationThreadPool.execute( () -> {
                 final String constituencyName = entry.getKey();
-                System.out.println("Generate image [constituencyName=" + constituencyName + "]");
+                log.debug("Generate image [constituencyName={}]", constituencyName);
                 final BufferedImage image = generateImage( new ConstituencyVoteDistributionImageGeneratorExact( entry.getValue() ) );
                 final File outputImagePath = new File(mapImageDir, electionData.constituencyKeyGenerator().toKey(constituencyName) + "." + targetOutputImageFormat);
                 try {
                     ImageIO.write(image, targetOutputImageFormat, outputImagePath);
                 } catch (Exception e) {
-                    System.err.println("Problem writing image " + e);
+                    log.error("Problem writing image", e);
                 }
                 images.put(constituencyName, image);
             });
@@ -61,9 +64,9 @@ public class VotingDistributionImagesGenerator {
         imageGenerationThreadPool.shutdown();
         final boolean finished = imageGenerationThreadPool.awaitTermination(10, TimeUnit.MINUTES);
         if(!finished)
-            System.err.println("Image generation still running after 10 minutes");
+            log.error("Image generation still running after 10 minutes");
         else{
-            System.out.println("Image generation finished [imageCount=" + images.size() + ", durationSeconds=" + (System.currentTimeMillis() - startTime)/1000 + "]");
+            log.info("Image generation finished [imageCount={}, durationSeconds={}]", images.size(), (System.currentTimeMillis() - startTime) / 1000);
         }
 
         return images;

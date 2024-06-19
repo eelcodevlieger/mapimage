@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -22,6 +23,7 @@ import com.knocksfornometer.mapimage.domain.Candidates;
  * 
  * @author Eelco de Vlieger
  */
+@Slf4j
 public class ElectoralCommissionElectionData {
 
 	public static Map<String, Candidates> loadElectionData(String inputDataFile, Map<String, String> partyColorMapping, boolean blankResultsOnConstituencyRow, int numInitialRowsToSkip) throws Exception {
@@ -77,8 +79,7 @@ public class ElectoralCommissionElectionData {
 	    	
 			String partyCode = partyCodeCell.getRichStringCellValue().getString();
 	    	if(partyCode == null || partyCode.trim().isEmpty()){
-
-	    		System.out.println("constituency election result [constituencyName=" + constituencyName + ", turnout=" + turnout + ", candidates=" + candidates + "]");
+                log.debug("constituency election result [constituencyName={}, turnout={}, candidates={}]", constituencyName, turnout, candidates);
 	    		candidates.add( Candidate.createNoVoteCandidate(candidates) );
 	    		electionDataMap.put(constituencyName, new Candidates( candidates.toArray( new Candidate[candidates.size()] ) ) );
 	    		
@@ -93,8 +94,9 @@ public class ElectoralCommissionElectionData {
 	    	// vote share
 	    	double voteShare = row.getCell(5).getNumericCellValue();
 	    	
-	    	if(turnout < 0.1d)
-	    		throw new IllegalStateException("Turnout percentage invalid [turnout=" + turnout + "]");
+	    	if(turnout < 0.1d) {
+				throw new IllegalStateException("Turnout percentage invalid [turnout=" + turnout + "]");
+			}
 	    	
 			candidates.add( new Candidate(partyColorMapping, partyCode, (int)(voteShare / 100 * turnout) ) );
 	    }

@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import com.knocksfornometer.mapimage.data.ElectionDataLoader;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -28,6 +29,7 @@ import com.knocksfornometer.mapimage.domain.Candidates;
  * 
  * @author Eelco de Vlieger
  */
+@Slf4j
 public class _2015ElectoralCommissionElectionData implements ElectionDataLoader {
 
 	private static final String INPUT_DATA_FILE = "src\\main\\resources\\election_data\\2015\\electoral_commission\\2015-UK-general-election-data-results-WEB.xlsx";
@@ -92,7 +94,7 @@ public class _2015ElectoralCommissionElectionData implements ElectionDataLoader 
 	    	final String partyCode = row.getCell(17).getStringCellValue();
 			final Double turnout = getTurnoutPercentage(turnoutData, constituencyName);
 			if(turnout == null) {
-				System.err.println("No turnout data found [constituencyName=" + constituencyName + "]");
+                log.error("No turnout data found [constituencyName={}]", constituencyName);
 				continue;
 			}
 			electionDataMap.put(constituencyName, new Candidate(partyColorMapping, partyCode, (int)Math.round( voteShare / 100 * turnout )));

@@ -7,9 +7,11 @@ import com.knocksfornometer.mapimage.data.ElectionYearDataSource;
 import com.knocksfornometer.mapimage.imagegeneration.ImageGenerator;
 import com.knocksfornometer.mapimage.imagegeneration.VotingDistributionImagesGenerator;
 import com.knocksfornometer.mapimage.imagegeneration.VotingDistributionMapGenerator;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 
 import static com.knocksfornometer.mapimage.utils.JsonUtils.loadStringMapFromJsonFile;
@@ -34,6 +36,7 @@ import static com.knocksfornometer.mapimage.utils.XmlUtils.writeXmlDocumentToFil
  *
  * @author Eelco de Vlieger
  */
+@Slf4j
 public class Main {
 
 	private static final String TARGET_OUTPUT_IMAGE_FORMAT = "png";
@@ -56,23 +59,27 @@ public class Main {
 
 	
 	public static void main(final String... args) throws Exception {
-		for(ElectionYearDataSource electionYearDataSource : ElectionYearDataSource.getElectionYearDataSources(args)) {
-			System.out.println("Loading election data [electionYearDataSource=" + electionYearDataSource + "]");
+		var electionYearDataSources = ElectionYearDataSource.getElectionYearDataSources(args);
+		log.info("Processing [electionYearDataSources={}]", Arrays.toString(electionYearDataSources));
+
+		for(ElectionYearDataSource electionYearDataSource : electionYearDataSources) {
+            log.info("Loading election data [electionYearDataSource={}]", electionYearDataSource);
 			var electionData = getElectionData(electionYearDataSource);
 
-			System.out.println("Generate a 'voting distribution' image for each constituency [electionYearDataSource=" + electionYearDataSource + "]");
+            log.info("Generate a 'voting distribution' image for each constituency [electionYearDataSource={}]", electionYearDataSource);
 			var votingDistributionImagesGenerator = new VotingDistributionImagesGenerator(TARGET_OUTPUT_BASE_DIR, TARGET_OUTPUT_IMAGE_DIR, TARGET_OUTPUT_IMAGE_FORMAT, IMAGE_WIDTH, IMAGE_HEIGHT);
 			var patternImages = votingDistributionImagesGenerator.generateImages(electionData);
 
-			System.out.println("Update SVG map image and save the resulting file [electionYearDataSource=" + electionYearDataSource + "]");
+            log.info("Update SVG map image and save the resulting file [electionYearDataSource={}]", electionYearDataSource);
 			var votingDistributionMapGenerator = new VotingDistributionMapGenerator(TARGET_OUTPUT_IMAGE_DIR, TARGET_OUTPUT_IMAGE_FORMAT, IMAGE_WIDTH, IMAGE_HEIGHT, EMBED_IMAGE_IN_SVG);
 			var votingDistributionMap = votingDistributionMapGenerator.generate(patternImages, electionData);;
 
-			System.out.println("Save generate voting distribution map to file");
-			writeXmlDocumentToFile(votingDistributionMap, TARGET_OUTPUT_BASE_DIR + electionData.electionYearDataSource() + "\\" + electionData.electionYearDataSource().getElectionYear().getYear() + SVG_MAP_OUTPUT_FILE);
+			log.info("Save generate voting distribution map to file");
+			var svgOutputFile = new File(TARGET_OUTPUT_BASE_DIR + electionData.electionYearDataSource() + "\\" + electionData.electionYearDataSource().getElectionYear().getYear() + SVG_MAP_OUTPUT_FILE);
+			writeXmlDocumentToFile(votingDistributionMap, svgOutputFile);
 		}
 		
-		System.out.println("Completed");
+		log.info("Completed");
 	}
 
 	private static ElectionData getElectionData(ElectionYearDataSource electionYearDataSource) throws IOException {
