@@ -15,5 +15,11 @@
 	'BNP':		'#00008B', // British National Party
 	'CPA':		'#AA00AA', // Christian Peoples Alliance
 	'ED':		'#915F6D', // English Democrats
+	'KHHC':		'#000000', // Independent Community & Health Concern (formerly Independent Kidderminster Hospital and Health Concern), abbr. ICHC, is a political party based in Kidderminster, United Kingdom
+	'RESP':		'#9C2510', // Respect Unity Coalition'
+	'SL':		'#CE0000', // Socialist Labour Party
+	'APNI':		'#F6CB2F', // The Alliance Party of Northern Ireland (APNI), or simply Alliance, is a liberal and centrist political party in Northern Ireland
+	'UU':		'#48A5EE', // Ulster Unionist Party
+	'SPEAKER':	'#FFFFFF', // Speaker of the House of Commons
 	'IND':		'#DDDDDD'
 }
