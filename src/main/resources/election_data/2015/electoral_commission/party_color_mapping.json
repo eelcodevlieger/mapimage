@@ -24,6 +24,7 @@
 	'GREEN SOC':					'#00A86B', // Alliance for Green Socialism
 	'TUV':							'#0C3A6A', // Traditional Unionist Voice
 	'NATIONAL HEALTH ACTION PARTY':	'#0071BB', // National Health Action Party
+	'ISWSL':						'#DCDCDC', // Independent Save Withybush Save Lives
 	'ICHC':							'#FF0000', // Independent Community and Health Concern
 	'IND':							'#DDDDDD'
 }
