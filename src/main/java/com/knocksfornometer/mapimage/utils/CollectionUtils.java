@@ -8,22 +8,21 @@ import java.util.Random;
  * See http://stackoverflow.com/questions/1519736/random-shuffling-of-an-array
  */
 public class CollectionUtils {
-    private static Random random;
 
     /**
-     * Code from method java.util.Collections.shuffle();
+     * Code from method java.util.Collections.shuffle() - updated to use a fixed-seed pseudo-random instance for repeatability
      * note: Array is shuffled in place - return value for convenience.
      */
-    public static void shuffle(float[][] array) {
-        if (random == null) random = new Random();
-        int count = array.length;
-        for (int i = count; i > 1; i--) {
+    public static void shuffle(final float[][] array) {
+        // use new (pseudo) random instance with fixed seed for each shuffle, to reproduce the same output between runs
+        var random = new Random(1);
+        for (int i = array.length; i > 1; i--) {
             swap(array, i - 1, random.nextInt(i));
         }
     }
 
-    private static void swap(float[][] array, int i, int j) {
-        float[] temp = array[i];
+    private static void swap(final float[][] array, final int i, final int j) {
+        var temp = array[i];
         array[i] = array[j];
         array[j] = temp;
     }
