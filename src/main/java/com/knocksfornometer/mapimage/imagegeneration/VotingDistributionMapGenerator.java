@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.knocksfornometer.mapimage.utils.XmlUtils.loadAsXmlDocument;
@@ -30,6 +31,8 @@ import static com.knocksfornometer.mapimage.utils.XmlUtils.loadAsXmlDocument;
 @Slf4j
 public class VotingDistributionMapGenerator {
     private static final File RESOURCES_DIRECTORY = new File("src\\main\\resources");
+
+    private static final Pattern CONTAINS_NUMBERS = Pattern.compile(".*\\d.*");
 
     private final String targetOutputImageDir;
     private final String targetOutputImageFormat;
@@ -45,8 +48,8 @@ public class VotingDistributionMapGenerator {
 
         final XPath xpath = XPathFactory.newInstance().newXPath();
 
-        final Set<String> matches = new HashSet<>();
-        final Set<String> noMatch = new TreeSet<>();
+        var matches = new HashSet<String>();
+        Set<String> noMatch = new TreeSet<>();
 
         clean(xpath, svgMapDocument);
 
@@ -57,6 +60,9 @@ public class VotingDistributionMapGenerator {
 
         log.info("SVG :: generate pattern image definitions");
         generatePatternImageDefs(svgMapDocument, xpath, matches, images, electionData);
+
+        // workaround: ignore any unmatched constituency areas that contain a number as part of the name (likely to be duplicate paths in the CSV file)
+        noMatch = noMatch.parallelStream().filter(str -> !CONTAINS_NUMBERS.matcher(str).matches()).collect(Collectors.toSet());
 
         log.info("constituency names matching results [match={}, noMatch={}]", matches.size(), noMatch.size());
         if(!noMatch.isEmpty()) {
@@ -116,8 +122,12 @@ public class VotingDistributionMapGenerator {
                 if(semicolonIndex >= 0)
                     style += originalStyle.substring(semicolonIndex);
                 style = style.replaceAll("&", "&amp;");
-                // increase the constituency border line width
-                style = style.replace("stroke-width:0.5", "stroke-width:0.8");
+                // increase the constituency border line-width
+                if(style.contains("stroke-width")) {
+                    style = style.replace("stroke-width:0.5", "stroke-width:0.8");
+                } else {
+                    style += ";fill-opacity: 1;stroke: #000000;stroke-width: 0.8;";
+                }
             }else{
                 noMatch.add(constituencyKey);
                 if(styleAttribute != null){
