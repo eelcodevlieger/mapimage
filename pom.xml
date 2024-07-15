@@ -65,7 +65,9 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<release>22</release>
-				</configuration>
+                    <source>22</source>
+                    <target>22</target>
+                </configuration>
 			</plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -123,6 +125,16 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>33.2.1-jre</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-transcoder</artifactId>
+            <version>1.17</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-codec</artifactId>
+            <version>1.17</version>
         </dependency>
 
         <!-- logging -->

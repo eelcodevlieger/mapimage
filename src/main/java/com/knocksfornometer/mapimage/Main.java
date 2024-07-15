@@ -4,10 +4,10 @@ import com.google.common.base.CaseFormat;
 import com.knocksfornometer.mapimage.domain.ConstituencyMapping;
 import com.knocksfornometer.mapimage.domain.ElectionData;
 import com.knocksfornometer.mapimage.data.ElectionYearDataSource;
-import com.knocksfornometer.mapimage.imagegeneration.ImageGenerator;
-import com.knocksfornometer.mapimage.imagegeneration.VotingDistributionImagesGenerator;
-import com.knocksfornometer.mapimage.imagegeneration.VotingDistributionMapGenerator;
+import com.knocksfornometer.mapimage.imagegeneration.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.batik.ext.awt.image.spi.ImageTagRegistry;
+import org.apache.logging.log4j.ThreadContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,6 +43,7 @@ public class Main {
 	private static final String TARGET_OUTPUT_BASE_DIR = "target\\map\\";
 	private static final String TARGET_OUTPUT_IMAGE_DIR = "\\constituencies\\";
 	private static final String SVG_MAP_OUTPUT_FILE = "UKElectionMap_votes.svg";
+	private static final String PNG_MAP_OUTPUT_FILE = "UKElectionMap_votes.png";
 	private static final int IMAGE_WIDTH = 300;
 	private static final int IMAGE_HEIGHT = 300;
 
@@ -56,14 +57,20 @@ public class Main {
 	 * If false - the images get linked as external files.
 	 */
 	private static final boolean EMBED_IMAGE_IN_SVG = true;
+	public static final float OUTPUT_HEIGHT_PX = 5000f;
 
-	
+
 	public static void main(final String... args) throws Exception {
 		var electionYearDataSources = ElectionYearDataSource.getElectionYearDataSources(args);
 		log.info("Processing [electionYearDataSources={}]", Arrays.toString(electionYearDataSources));
 
+		// workaround: add Batik support for Base64 encoded embedded images
+		ImageTagRegistry.getRegistry().register(new Base64ImageUrlRegistryEntry());
+
 		for(ElectionYearDataSource electionYearDataSource : electionYearDataSources) {
-            log.info("Loading election data [electionYearDataSource={}]", electionYearDataSource);
+			ThreadContext.put("mdc.electionYearDataSource", electionYearDataSource.name());
+
+			log.info("Loading election data [electionYearDataSource={}]", electionYearDataSource);
 			var electionData = getElectionData(electionYearDataSource);
 
             log.info("Generate a 'voting distribution' image for each constituency [electionYearDataSource={}]", electionYearDataSource);
@@ -74,9 +81,13 @@ public class Main {
 			var votingDistributionMapGenerator = new VotingDistributionMapGenerator(TARGET_OUTPUT_IMAGE_DIR, TARGET_OUTPUT_IMAGE_FORMAT, IMAGE_WIDTH, IMAGE_HEIGHT, EMBED_IMAGE_IN_SVG);
 			var votingDistributionMap = votingDistributionMapGenerator.generate(patternImages, electionData);;
 
-			log.info("Save generate voting distribution map to file");
+			log.info("Save generated voting distribution map to SVG file");
 			var svgOutputFile = new File(TARGET_OUTPUT_BASE_DIR + electionData.electionYearDataSource() + "\\" + electionData.electionYearDataSource().getElectionYear().getYear() + SVG_MAP_OUTPUT_FILE);
 			writeXmlDocumentToFile(votingDistributionMap, svgOutputFile);
+
+			log.info("Save generated voting distribution map to PNG file");
+			var svgToPngTransCoder = new SvgToPngTranscoder();
+			svgToPngTransCoder.transcode(svgOutputFile, TARGET_OUTPUT_BASE_DIR + electionData.electionYearDataSource() + "\\" + electionData.electionYearDataSource().getElectionYear().getYear() + PNG_MAP_OUTPUT_FILE, OUTPUT_HEIGHT_PX);
 		}
 		
 		log.info("Completed");
