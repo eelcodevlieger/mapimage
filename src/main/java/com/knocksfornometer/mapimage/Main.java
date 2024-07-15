@@ -1,6 +1,7 @@
 package com.knocksfornometer.mapimage;
 
 import com.google.common.base.CaseFormat;
+import com.knocksfornometer.mapimage.config.Config;
 import com.knocksfornometer.mapimage.domain.ConstituencyMapping;
 import com.knocksfornometer.mapimage.domain.ElectionData;
 import com.knocksfornometer.mapimage.data.ElectionYearDataSource;
@@ -39,8 +40,10 @@ import static com.knocksfornometer.mapimage.utils.XmlUtils.writeXmlDocumentToFil
 @Slf4j
 public class Main {
 
+	private static final Config config = Config.load();
+
 	private static final String TARGET_OUTPUT_IMAGE_FORMAT = "png";
-	private static final String TARGET_OUTPUT_BASE_DIR = "target\\map\\";
+	private static final String TARGET_OUTPUT_BASE_DIR = config.targetOutputBaseDir;
 	private static final String TARGET_OUTPUT_IMAGE_DIR = "\\constituencies\\";
 	private static final String SVG_MAP_OUTPUT_FILE = "UKElectionMap_votes.svg";
 	private static final String PNG_MAP_OUTPUT_FILE = "UKElectionMap_votes.png";
@@ -48,7 +51,7 @@ public class Main {
 	private static final int IMAGE_HEIGHT = 300;
 
 	private static final String[] PREFIXES = {"CITYOF", "THE", "MID", "CENTRAL", "NORTH", "EAST", "SOUTH", "WEST"};
-	private static final File RESOURCES_DIRECTORY = new File("src\\main\\resources");
+	private static final String RESOURCES_DIRECTORY = config.resourcesDir;
 	private static final String CONSTITUENCY_NAME_MAPPING_FILE = "constituency_name_mapping.json";
 	private static final String SEAT_TO_CONSTITUENCY_NAME_MAPPING_FILE = "2005_seat_to_constituency_mapping.json";
 
@@ -70,6 +73,8 @@ public class Main {
 		for(ElectionYearDataSource electionYearDataSource : electionYearDataSources) {
 			ThreadContext.put("mdc.electionYearDataSource", electionYearDataSource.name());
 
+			var electionDataSourceConfig = config.get(electionYearDataSource);
+
 			log.info("Loading election data [electionYearDataSource={}]", electionYearDataSource);
 			var electionData = getElectionData(electionYearDataSource);
 
@@ -82,18 +87,18 @@ public class Main {
 			var votingDistributionMap = votingDistributionMapGenerator.generate(patternImages, electionData);;
 
 			log.info("Save generated voting distribution map to SVG file");
-			var svgOutputFile = new File(TARGET_OUTPUT_BASE_DIR + electionData.electionYearDataSource() + "\\" + electionData.electionYearDataSource().getElectionYear().getYear() + SVG_MAP_OUTPUT_FILE);
+			var svgOutputFile = new File(TARGET_OUTPUT_BASE_DIR + electionYearDataSource + "_" + SVG_MAP_OUTPUT_FILE);
 			writeXmlDocumentToFile(votingDistributionMap, svgOutputFile);
 
 			log.info("Save generated voting distribution map to PNG file");
 			var svgToPngTransCoder = new SvgToPngTranscoder();
-			svgToPngTransCoder.transcode(svgOutputFile, TARGET_OUTPUT_BASE_DIR + electionData.electionYearDataSource() + "\\" + electionData.electionYearDataSource().getElectionYear().getYear() + PNG_MAP_OUTPUT_FILE, OUTPUT_HEIGHT_PX);
+			svgToPngTransCoder.transcode(svgOutputFile, TARGET_OUTPUT_BASE_DIR + electionYearDataSource + "_" + PNG_MAP_OUTPUT_FILE, OUTPUT_HEIGHT_PX);
 		}
 		
 		log.info("Completed");
 	}
 
-	private static ElectionData getElectionData(ElectionYearDataSource electionYearDataSource) throws IOException {
+	private static ElectionData getElectionData(final ElectionYearDataSource electionYearDataSource) throws IOException {
 		var constituencyNameMapping = loadStringMapFromJsonFile( new File(RESOURCES_DIRECTORY, CONSTITUENCY_NAME_MAPPING_FILE) );
 		var seatNumberToConstituencyNameMapping = loadStringMapFromJsonFile( new File(RESOURCES_DIRECTORY, SEAT_TO_CONSTITUENCY_NAME_MAPPING_FILE) );
 		var constituencyMapping = new ConstituencyMapping(PREFIXES, constituencyNameMapping, seatNumberToConstituencyNameMapping);
