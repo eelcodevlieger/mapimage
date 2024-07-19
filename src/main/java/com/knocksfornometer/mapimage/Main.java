@@ -33,6 +33,7 @@ import static com.knocksfornometer.mapimage.utils.XmlUtils.writeXmlDocumentToFil
  *   	(pixels represent the party colour and appear in frequency proportional to the votes).</li>
  *   <li>populates the constituencies in the image map with the generated images</li>
  *   <li>writes the updated SVG file</li>
+ *   <li>renders the same map as PNG file</li>
  * </ul>
  *
  * @author Eelco de Vlieger

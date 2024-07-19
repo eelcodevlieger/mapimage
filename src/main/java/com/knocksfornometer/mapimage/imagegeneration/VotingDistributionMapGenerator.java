@@ -84,14 +84,14 @@ public class VotingDistributionMapGenerator {
      * Links constituency paths to the generated images
      */
     private void linkConstituencyPathsToImages(final Map<String, String> constituencyKeyToImageName,
-                                                      final Document doc,
-                                                      final XPath xpath,
-                                                      final Set<String> matches,
-                                                      final Set<String> noMatch,
-                                                      final ConstituencyKeyGenerator constituencyKeyGenerator) throws XPathExpressionException {
+                                               final Document doc,
+                                               final XPath xpath,
+                                               final Set<String> matches,
+                                               final Set<String> noMatch,
+                                               final ConstituencyKeyGenerator constituencyKeyGenerator) throws XPathExpressionException {
 
-        // Iterate over all constituency SVG paths using XPath to select the DOM nodes
-        final NodeList pathNodes = ((NodeList) xpath.compile("//path").evaluate(doc, XPathConstants.NODESET));
+        // Iterate over all constituency SVG <path> and <polygon> elements - using XPath to select the DOM nodes
+        final NodeList pathNodes = ((NodeList) xpath.compile("//path | //polygon").evaluate(doc, XPathConstants.NODESET));
         for (int i = 0; i < pathNodes.getLength(); i++) {
             final Node pathNode = pathNodes.item(i);
             final NamedNodeMap attributes = pathNode.getAttributes();
@@ -103,7 +103,7 @@ public class VotingDistributionMapGenerator {
             }
 
             final String constituencyKey = constituencyKeyGenerator.toKey(constituency);
-            final String sourceConstituency = constituencyKeyToImageName.get( constituencyKey );
+            final String sourceConstituency = constituencyKeyToImageName.get(constituencyKey);
 
             // Update the style attribute to link to the images by ID
             String style = "fill:url(#" + constituencyKey + ")";
