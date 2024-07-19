@@ -6,6 +6,7 @@ import com.knocksfornometer.mapimage.data._2010.electoralcommission._2010Elector
 import com.knocksfornometer.mapimage.data._2015.electoralcommission._2015ElectoralCommissionElectionData;
 import com.knocksfornometer.mapimage.data._2017.electoralcommission._2017ElectoralCommissionElectionData;
 import com.knocksfornometer.mapimage.data._2019.ukparliament._2019UkParliamentElectionData;
+import com.knocksfornometer.mapimage.data._2024.ukparliament._2024UkParliamentElectionData;
 import com.knocksfornometer.mapimage.domain.ElectionYear;
 import lombok.Getter;
 
@@ -17,7 +18,8 @@ public enum ElectionYearDataSource{
 	_2010ElectoralCommission(ElectionYear._2010, ElectionDataSource.ElectoralCommission, new _2010ElectoralCommissionElectionData()),
 	_2015ElectoralCommission(ElectionYear._2015, ElectionDataSource.ElectoralCommission, new _2015ElectoralCommissionElectionData()),
 	_2017ElectoralCommission(ElectionYear._2017, ElectionDataSource.ElectoralCommission, new _2017ElectoralCommissionElectionData()),
-	_2019UkParliament(ElectionYear._2019, ElectionDataSource.UkParliament, new _2019UkParliamentElectionData());
+	_2019UkParliament(ElectionYear._2019, ElectionDataSource.UkParliament, new _2019UkParliamentElectionData()),
+	_2024UkParliament(ElectionYear._2024, ElectionDataSource.UkParliament, new _2024UkParliamentElectionData());
 
 	private static final Map<ElectionYear, List<ElectionYearDataSource>> electionYearDataSourceByYear = new EnumMap<>(ElectionYear.class);
 	static {

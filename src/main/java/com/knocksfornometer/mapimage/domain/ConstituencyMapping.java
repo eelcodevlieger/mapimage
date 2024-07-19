@@ -23,7 +23,10 @@ public class ConstituencyMapping implements ConstituencyKeyGenerator{
 			constituencyName = convertSeatNumberToConstituencyName(constituencyName);
 		
 		// remove all non-word characters and UPPER CASE the result
-		constituencyName = constituencyName.replaceAll("&", "AND").replaceAll("\\W", "").replaceAll("_", "").toUpperCase();
+		constituencyName = constituencyName.replaceAll("&", "AND")
+				.replaceAll("x2C", "") // hex code for comma (x2C) found as string in path name - removing
+				.replaceAll("[\\W_,\\d]", "") // remove all underscores, numbers and non-word characters
+				.toUpperCase();
 		
 		// Specific prefix 'hack' to convert WESTBRISTOL in to BRISTOLWEST for example
 		// Due to data and SVG using different name conventions
