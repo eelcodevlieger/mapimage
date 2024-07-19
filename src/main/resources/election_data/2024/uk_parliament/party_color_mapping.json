@@ -16,17 +16,20 @@
 	"BNP":									"#00008B", // British National Party
 	"CPA":									"#AA00AA", // Christian Peoples Alliance
 	"ENG DEM":								"#915F6D", // English Democrats
-	"ALLIANCE":								"#F6CB2F", // Alliance Party of Northern Ireland
+	"APNI":									"#F6CB2F", // Alliance Party of Northern Ireland
 	"PBPA":									"#9400D3", // People Before Profit Alliance
 	"GREEN SOC":							"#00A86B", // Alliance for Green Socialism
 	"TUV":									"#0C3A6A", // Traditional Unionist Voice
 	"NATIONAL HEALTH ACTION PARTY":			"#0071BB", // National Health Action Party
 	"ICHC":									"#FF0000", // Independent Community and Health Concern
 	"BREXIT":								"#12B6CF", // Brexit Party
-	"ASHFIELD INDEPENDENTS":				"#F7C3CB", // Ashfield Independents
+	"ASH":									"#F7C3CB", // Ashfield Independents
 	"HEAVY WOOLLEN DISTRICT INDEPENDENTS":	"#DCDCDC", // Heavy Woollen Independents
 	"BIRKENHEAD SOCIAL JUSTICE PARTY":		"#B2393E", // Birkenhead Social Justice Party
 	"IGC":									"#222221", // The Independent Group for Change
-	"REFORMUK":								"#12B6CF", // Reform UK
+	"RUK":									"#12B6CF", // Reform UK
+	"INET":									"#483D8B", // Independent Network
+	"NIP":									"#DDDDDD", // Newham Independents Party
+	"WPB":									"#780021", // Workers Party of Britain
 	"IND":									"#DDDDDD"
 }
