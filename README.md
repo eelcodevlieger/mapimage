@@ -7,7 +7,7 @@ Generates a map (image) of the UK, displaying the General Election voting distri
 Existing election result maps did not really show the subtlety in individual voting, due to the first-past-the-post (winner-takes-all) voting system.
 
 ## how?
-* source code starting point: src/main/java/com/knocksfornometer/mapimage/Main.java
+* source code starting point: src/main/java/com/github/mapimage/Main.java
 * reads in a public map of the UK in SVG format (see 'input map sources' section below)
 * reads in election data (from Electoral Commission or UK Parliament)
 * looks up party colors (using: http://en.wikipedia.org/wiki/Wikipedia:Index_of_United_Kingdom_political_parties_meta_attributes)
