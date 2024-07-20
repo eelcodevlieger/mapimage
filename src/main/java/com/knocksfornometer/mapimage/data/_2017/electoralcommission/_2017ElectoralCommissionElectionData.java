@@ -21,19 +21,18 @@ import com.google.common.collect.ListMultimap;
 import com.knocksfornometer.mapimage.domain.Candidate;
 import com.knocksfornometer.mapimage.domain.Candidates;
 
-/**
- * 
- * @author Eelco de Vlieger
- */
+import static com.knocksfornometer.mapimage.Main.CONFIG;
+import static com.knocksfornometer.mapimage.data.ElectionYearDataSource._2017ElectoralCommission;
+
 @Slf4j
 public class _2017ElectoralCommissionElectionData implements ElectionDataLoader {
 
-	private static final String INPUT_DATA_FILE = "src\\main\\resources\\election_data\\2017\\electoral_commission\\2017-UKPGE-Electoral-Data.xls";
+	private static final String INPUT_DATA_FILE = "2017-UKPGE-Electoral-Data.xls";
 	
 	@SneakyThrows
-	public Map<String, Candidates> apply(Map<String, String> partyColorMapping) {
+	public Map<String, Candidates> apply(final Map<String, String> partyColorMapping) {
 		final Workbook workBook;
-		try(InputStream inputStream = new FileInputStream(INPUT_DATA_FILE)){
+		try(InputStream inputStream = new FileInputStream(CONFIG.getElectionYearDataSourceResourcePath(_2017ElectoralCommission) + INPUT_DATA_FILE)){
 			workBook = WorkbookFactory.create(inputStream);
 		}
 		

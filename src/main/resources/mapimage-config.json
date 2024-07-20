@@ -1,5 +1,6 @@
 // MapImage config (json format with comments allowed)
 {
   "targetOutputBaseDir": "target\\mapimage-output\\",
-  "resourcesDir": "src\\main\\resources"
+  "resourcesDir": "src\\main\\resources",
+  "svgMapInputFileNameSuffix": "UKElectionMap.svg"
 }
