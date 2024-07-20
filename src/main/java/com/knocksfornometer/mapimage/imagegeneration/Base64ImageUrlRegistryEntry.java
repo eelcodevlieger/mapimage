@@ -17,8 +17,7 @@ public class Base64ImageUrlRegistryEntry extends AbstractRegistryEntry implement
     /**
      * The priority of this entry.
      * This entry should in most cases be the last entry.
-     * but if one wishes one could set a priority higher and be called
-     * afterwords
+     * but if one wishes one could set a priority higher and be called afterwords
      */
     public static final float PRIORITY =
             (1000 * MagicNumberRegistryEntry.PRIORITY) - 1;

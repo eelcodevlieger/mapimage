@@ -12,8 +12,6 @@ import lombok.AllArgsConstructor;
  * Generate a 'voting distribution' image.
  * 
  * For each party percentage add a party colour pixel, then shuffle the resulting pixels.
- * 
- * @author Eelco de Vlieger
  */
 @AllArgsConstructor
 public class ConstituencyVoteDistributionImageGeneratorExact implements ImageGenerator {
@@ -26,7 +24,7 @@ public class ConstituencyVoteDistributionImageGeneratorExact implements ImageGen
 		int height = raster.getHeight();
 		
 		if(width * height % 100 != 0)
-			throw new IllegalStateException("Currently restricting pixelcount to multiples of 100 (representing vote percentage)");
+			throw new IllegalStateException("Currently restricting pixel count to multiples of 100 (representing vote percentage)");
 		
 		float[][] pixels = getVoteDistributionPixels(width, height, candidates.getCandidatesExpanded());
 		CollectionUtils.shuffle(pixels); // make the distribution more realistic by shuffling the pixel locations

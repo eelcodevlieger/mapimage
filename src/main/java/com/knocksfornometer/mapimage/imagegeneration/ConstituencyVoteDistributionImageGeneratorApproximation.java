@@ -12,8 +12,6 @@ import lombok.AllArgsConstructor;
  * 
  * For each pixel grab a random party colour with the probability matching the voting distribution.
  * Due to the amount of pixels this will produce a texture matching the voting distribution.
- * 
- * @author Eelco de Vlieger
  */
 @AllArgsConstructor
 public class ConstituencyVoteDistributionImageGeneratorApproximation implements ImageGenerator {

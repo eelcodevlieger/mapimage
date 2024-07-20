@@ -12,14 +12,16 @@ import lombok.Getter;
 
 import java.util.*;
 
+import static com.knocksfornometer.mapimage.data.ElectionDataSource.*;
+
 @Getter
 public enum ElectionYearDataSource{
-	_2005ElectoralCommission(ElectionYear._2005, ElectionDataSource.ElectoralCommission, new _2005ElectoralCommissionElectionData()),
-	_2010ElectoralCommission(ElectionYear._2010, ElectionDataSource.ElectoralCommission, new _2010ElectoralCommissionElectionData()),
-	_2015ElectoralCommission(ElectionYear._2015, ElectionDataSource.ElectoralCommission, new _2015ElectoralCommissionElectionData()),
-	_2017ElectoralCommission(ElectionYear._2017, ElectionDataSource.ElectoralCommission, new _2017ElectoralCommissionElectionData()),
-	_2019UkParliament(ElectionYear._2019, ElectionDataSource.UkParliament, new _2019UkParliamentElectionData()),
-	_2024UkParliament(ElectionYear._2024, ElectionDataSource.UkParliament, new _2024UkParliamentElectionData());
+	_2005ElectoralCommission(ElectionYear._2005, ELECTORAL_COMMISSION, new _2005ElectoralCommissionElectionData()),
+	_2010ElectoralCommission(ElectionYear._2010, ELECTORAL_COMMISSION, new _2010ElectoralCommissionElectionData()),
+	_2015ElectoralCommission(ElectionYear._2015, ELECTORAL_COMMISSION, new _2015ElectoralCommissionElectionData()),
+	_2017ElectoralCommission(ElectionYear._2017, ELECTORAL_COMMISSION, new _2017ElectoralCommissionElectionData()),
+	_2019UkParliament(ElectionYear._2019, UK_PARLIAMENT, new _2019UkParliamentElectionData()),
+	_2024UkParliament(ElectionYear._2024, UK_PARLIAMENT, new _2024UkParliamentElectionData());
 
 	private static final Map<ElectionYear, List<ElectionYearDataSource>> electionYearDataSourceByYear = new EnumMap<>(ElectionYear.class);
 	static {

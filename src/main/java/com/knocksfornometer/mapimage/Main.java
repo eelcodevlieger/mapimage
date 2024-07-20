@@ -1,7 +1,7 @@
 package com.knocksfornometer.mapimage;
 
-import com.google.common.base.CaseFormat;
 import com.knocksfornometer.mapimage.config.Config;
+import com.knocksfornometer.mapimage.data.PartyColorMapping;
 import com.knocksfornometer.mapimage.domain.ConstituencyMapping;
 import com.knocksfornometer.mapimage.domain.ElectionData;
 import com.knocksfornometer.mapimage.data.ElectionYearDataSource;
@@ -13,7 +13,6 @@ import org.apache.logging.log4j.ThreadContext;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Map;
 
 import static com.knocksfornometer.mapimage.utils.JsonUtils.loadStringMapFromJsonFile;
 import static com.knocksfornometer.mapimage.utils.XmlUtils.writeXmlDocumentToFile;
@@ -35,16 +34,14 @@ import static com.knocksfornometer.mapimage.utils.XmlUtils.writeXmlDocumentToFil
  *   <li>writes the updated SVG file</li>
  *   <li>renders the same map as PNG file</li>
  * </ul>
- *
- * @author Eelco de Vlieger
  */
 @Slf4j
 public class Main {
 
-	private static final Config config = Config.load();
+	public static final Config CONFIG = Config.load();
 
 	private static final String TARGET_OUTPUT_IMAGE_FORMAT = "png";
-	private static final String TARGET_OUTPUT_BASE_DIR = config.targetOutputBaseDir;
+	private static final String TARGET_OUTPUT_BASE_DIR = CONFIG.targetOutputBaseDir;
 	private static final String TARGET_OUTPUT_IMAGE_DIR = "\\constituencies\\";
 	private static final String SVG_MAP_OUTPUT_FILE = "UKElectionMap_votes.svg";
 	private static final String PNG_MAP_OUTPUT_FILE = "UKElectionMap_votes.png";
@@ -52,7 +49,7 @@ public class Main {
 	private static final int IMAGE_HEIGHT = 300;
 
 	private static final String[] PREFIXES = {"CITYOF", "THE", "MID", "CENTRAL", "NORTH", "EAST", "SOUTH", "WEST"};
-	private static final String RESOURCES_DIRECTORY = config.resourcesDir;
+	private static final String RESOURCES_DIRECTORY = CONFIG.resourcesDir;
 	private static final String CONSTITUENCY_NAME_MAPPING_FILE = "constituency_name_mapping.json";
 	private static final String SEAT_TO_CONSTITUENCY_NAME_MAPPING_FILE = "2005_seat_to_constituency_mapping.json";
 
@@ -74,7 +71,7 @@ public class Main {
 		for(ElectionYearDataSource electionYearDataSource : electionYearDataSources) {
 			ThreadContext.put("mdc.electionYearDataSource", electionYearDataSource.name());
 
-			var electionDataSourceConfig = config.get(electionYearDataSource);
+			var electionDataSourceConfig = CONFIG.get(electionYearDataSource);
 
 			log.info("Loading election data [electionYearDataSource={}]", electionYearDataSource);
 			var electionData = getElectionData(electionYearDataSource);
@@ -103,19 +100,8 @@ public class Main {
 		var constituencyNameMapping = loadStringMapFromJsonFile( new File(RESOURCES_DIRECTORY, CONSTITUENCY_NAME_MAPPING_FILE) );
 		var seatNumberToConstituencyNameMapping = loadStringMapFromJsonFile( new File(RESOURCES_DIRECTORY, SEAT_TO_CONSTITUENCY_NAME_MAPPING_FILE) );
 		var constituencyMapping = new ConstituencyMapping(PREFIXES, constituencyNameMapping, seatNumberToConstituencyNameMapping);
-		var partyColorMapping = getPartyColorMapping(electionYearDataSource);
-		var svgMapInputFile = getSvgMapInputFile(electionYearDataSource.getElectionYear().getYear());
+		var partyColorMapping = PartyColorMapping.getPartyColorMapping(electionYearDataSource);
+		var svgMapInputFile = CONFIG.getSvgMapInputFileName(electionYearDataSource.getElectionYear().getYear());
 		return new ElectionData(electionYearDataSource, partyColorMapping, svgMapInputFile, constituencyMapping);
-	}
-
-	private static String getSvgMapInputFile(final int year) {
-		return "%dUKElectionMap.svg".formatted(year);
-	}
-
-	private static Map<String, String> getPartyColorMapping(final ElectionYearDataSource electionYearDataSource) throws IOException {
-		return loadStringMapFromJsonFile(new File(RESOURCES_DIRECTORY,
-				"election_data\\%d\\%s\\party_color_mapping.json".formatted(
-						electionYearDataSource.getElectionYear().getYear(),
-						CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, electionYearDataSource.getElectionDataSource().name()))));
 	}
 }

@@ -10,8 +10,6 @@ import javax.swing.JPanel;
 
 /**
  * Displays an image on a panel with the image name written over it.
- * 
- * @author Eelco de Vlieger
  */
 public class ImagePanel extends JPanel {
 
