@@ -9,6 +9,8 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import com.github.mapimage.data.ElectionDataLoader;
+import com.github.mapimage.domain.CandidateResult;
+import com.github.mapimage.domain.Party;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Row;
@@ -18,8 +20,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import com.github.mapimage.domain.Candidate;
-import com.github.mapimage.domain.Candidates;
+import com.github.mapimage.domain.CandidateResults;
 
 import static com.github.mapimage.Main.CONFIG;
 import static com.github.mapimage.data.ElectionYearDataSource._2017ElectoralCommission;
@@ -30,14 +31,14 @@ public class _2017ElectoralCommissionElectionData implements ElectionDataLoader 
 	private static final String INPUT_DATA_FILE = "2017-UKPGE-Electoral-Data.xls";
 	
 	@SneakyThrows
-	public Map<String, Candidates> apply(final Map<String, String> partyColorMapping) {
+	public Map<String, CandidateResults> load() {
 		final Workbook workBook;
 		try(InputStream inputStream = new FileInputStream(CONFIG.getElectionYearDataSourceResourcePath(_2017ElectoralCommission) + INPUT_DATA_FILE)){
 			workBook = WorkbookFactory.create(inputStream);
 		}
 		
 		final Map<String, Long> electorateSizeData = loadElectorateSizeData(workBook);
-		return loadElectionData(workBook, partyColorMapping, electorateSizeData);
+		return loadElectionData(workBook, electorateSizeData);
 	}
 
 	private static Map<String, Long> loadElectorateSizeData(final Workbook workBook) {
@@ -59,9 +60,9 @@ public class _2017ElectoralCommissionElectionData implements ElectionDataLoader 
 		return electorateSizeData;
 	}
 
-	private static Map<String, Candidates> loadElectionData(final Workbook workBook, final Map<String, String> partyColorMapping, final Map<String, Long> electorateSizeData) {
+	private static Map<String, CandidateResults> loadElectionData(final Workbook workBook, final Map<String, Long> electorateSizeData) {
 
-		final ListMultimap<String, Candidate> electionDataMap = ArrayListMultimap.create();
+		final ListMultimap<String, CandidateResult> electionDataMap = ArrayListMultimap.create();
 
 	    final Sheet candidatesSheet = workBook.getSheet("Results");
 	    
@@ -83,8 +84,8 @@ public class _2017ElectoralCommissionElectionData implements ElectionDataLoader 
 				continue;
 			}
 			final int percentageOfTotalElectorate = (int) Math.round(100.0 / (electorateSize / (double) numVotes));
-			final Candidate candidate = new Candidate(partyColorMapping, toPartyCode(partyIdentifier), percentageOfTotalElectorate);
-			electionDataMap.put(clean(constituencyName), candidate);
+			final CandidateResult candidateResult = new CandidateResult(Party.getByAbbreviation(partyIdentifier, percentageOfTotalElectorate), percentageOfTotalElectorate);
+			electionDataMap.put(clean(constituencyName), candidateResult);
 	    }
 	    
 	    return electionDataMap.asMap()
@@ -92,33 +93,15 @@ public class _2017ElectoralCommissionElectionData implements ElectionDataLoader 
 	    		.stream()
 	    		.collect(Collectors.toMap(Entry::getKey,
 	    				entry -> {
-	    					final Collection<Candidate> candidates = entry.getValue();
-	    					final Candidate noVoteCandidate = Candidate.createNoVoteCandidate(candidates);
-	    					final Candidate[] candidatesAndNotVoted = candidates.toArray(new Candidate[candidates.size() + 1]);
-	    					candidatesAndNotVoted[candidates.size()] = noVoteCandidate;
-	    					return new Candidates(candidatesAndNotVoted);
+	    					final Collection<CandidateResult> candidateResults = entry.getValue();
+	    					final CandidateResult noVoteCandidateResult = CandidateResult.createNoVoteCandidate(candidateResults);
+	    					final CandidateResult[] candidatesAndNotVoted = candidateResults.toArray(new CandidateResult[candidateResults.size() + 1]);
+	    					candidatesAndNotVoted[candidateResults.size()] = noVoteCandidateResult;
+	    					return new CandidateResults(candidatesAndNotVoted);
 	    				}
 	    			)
 	    		);
 	}
-
-    private static String toPartyCode(String partyIdentifier) {
-		return switch (partyIdentifier) {
-			case "Speaker" -> "SPK";
-			case "Conservative" -> "CON";
-			case "Labour" -> "LAB";
-			case "Liberal Democrats" -> "LD";
-			case "Green Party" -> "GREEN";
-			case "Plaid Cymru" -> "PC";
-			case "Sinn Féin" -> "SF";
-			case "ED", "EDP" -> "ENG DEM";
-			case "Independent", "Ashfield" -> "IND"; // Ashfield Independents Putting People Before Politics
-			case "PBP Alliance" -> "PBPA";
-			case "AGS" -> "GREEN SOC";
-			case "NHAP" -> "NATIONAL HEALTH ACTION PARTY";
-			default -> partyIdentifier;
-		};
-    }
 
     private static String clean(String constituencyName) {
         return constituencyName.replaceFirst("\\s?\\d$", ""); // remove trailing digit on end of constituency name

@@ -1,9 +1,9 @@
 package com.github.mapimage.data;
 
-import com.github.mapimage.domain.Candidates;
+import com.github.mapimage.domain.CandidateResults;
 
 import java.util.Map;
-import java.util.function.Function;
 
-public interface ElectionDataLoader extends Function<Map<String, String>, Map<String, Candidates>> {
+public interface ElectionDataLoader {
+    Map<String, CandidateResults> load();
 }

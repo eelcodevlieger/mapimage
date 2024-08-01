@@ -1,10 +1,11 @@
 package com.github.mapimage.data.source.ukparliament;
 
+import com.github.mapimage.domain.CandidateResult;
+import com.github.mapimage.domain.Party;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.github.mapimage.data.ElectionYearDataSource;
-import com.github.mapimage.domain.Candidate;
-import com.github.mapimage.domain.Candidates;
+import com.github.mapimage.domain.CandidateResults;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Row;
@@ -26,14 +27,13 @@ import static com.github.mapimage.Main.CONFIG;
 public class UkParliamentElectionData {
 
 	@SneakyThrows
-	public static Map<String, Candidates> loadElectionData(final ElectionYearDataSource electionYearDataSource,
-														   final String resultsInputFileByCandidate,
-														   final String resultsInputFileByConstituency,
-														   final Map<String, String> partyColorMapping,
-														   final int headerRowIndex,
-														   final int partyIdentifierColumnIndex,
-														   final int numVotesColumnIndex,
-														   final int totalElectorateColumnIndex) {
+	public static Map<String, CandidateResults> loadElectionData(final ElectionYearDataSource electionYearDataSource,
+                                                                 final String resultsInputFileByCandidate,
+                                                                 final String resultsInputFileByConstituency,
+                                                                 final int headerRowIndex,
+                                                                 final int partyIdentifierColumnIndex,
+                                                                 final int numVotesColumnIndex,
+                                                                 final int totalElectorateColumnIndex) {
 		final Workbook resultsByCandidateWorkBook;
 		try(InputStream inputStream = new FileInputStream(CONFIG.getElectionYearDataSourceResourcePath(electionYearDataSource) + resultsInputFileByCandidate)){
 			resultsByCandidateWorkBook = WorkbookFactory.create(inputStream);
@@ -43,19 +43,18 @@ public class UkParliamentElectionData {
 			resultsByConstituencyWorkBook = WorkbookFactory.create(inputStream);
 		}
 		final Map<String, Long> electorateSizeData = loadElectorateSizeData(resultsByConstituencyWorkBook, headerRowIndex, totalElectorateColumnIndex);
-		return loadElectionData(resultsByCandidateWorkBook, partyColorMapping, electorateSizeData, headerRowIndex, partyIdentifierColumnIndex, numVotesColumnIndex);
+		return loadElectionData(resultsByCandidateWorkBook, electorateSizeData, headerRowIndex, partyIdentifierColumnIndex, numVotesColumnIndex);
 	}
 
 	/**
 	 * @return Map of constituency name ->
 	 */
-	private static Map<String, Candidates> loadElectionData(final Workbook workBook,
-															final Map<String, String> partyColorMapping,
-															final Map<String, Long> electorateSizeData,
-															final int headerRowIndex,
-															final int partyIdentifierColumnIndex,
-															final int numVotesColumnIndex) {
-		final ListMultimap<String, Candidate> electionDataMap = ArrayListMultimap.create();
+	private static Map<String, CandidateResults> loadElectionData(final Workbook workBook,
+                                                                  final Map<String, Long> electorateSizeData,
+                                                                  final int headerRowIndex,
+                                                                  final int partyIdentifierColumnIndex,
+                                                                  final int numVotesColumnIndex) {
+		final ListMultimap<String, CandidateResult> electionDataMap = ArrayListMultimap.create();
 
 	    final Sheet candidatesSheet = workBook.getSheetAt(0);
 	    
@@ -81,8 +80,8 @@ public class UkParliamentElectionData {
 				continue;
 			}
 			final int percentageOfTotalElectorate = (int) Math.round(100.0 / (electorateSize / numVotes));
-			final Candidate candidate = new Candidate(partyColorMapping, toPartyCode(partyIdentifier), percentageOfTotalElectorate);
-			electionDataMap.put(constituencyName, candidate);
+			final CandidateResult candidateResult = new CandidateResult(Party.getByAbbreviation(partyIdentifier, percentageOfTotalElectorate), percentageOfTotalElectorate);
+			electionDataMap.put(constituencyName, candidateResult);
 	    }
 	    
 	    return electionDataMap.asMap()
@@ -90,11 +89,11 @@ public class UkParliamentElectionData {
 	    		.stream()
 	    		.collect(Collectors.toMap(Entry::getKey,
 	    				entry -> {
-	    					final Collection<Candidate> candidates = entry.getValue();
-	    					final Candidate candidateAndNotVoted = Candidate.createNoVoteCandidate(candidates);
-	    					final Candidate[] candidatesAndNotVoted = candidates.toArray(new Candidate[candidates.size() + 1]);
-	    					candidatesAndNotVoted[candidates.size()] = candidateAndNotVoted;
-	    					return new Candidates(candidatesAndNotVoted);
+	    					final Collection<CandidateResult> candidateResults = entry.getValue();
+	    					final CandidateResult candidateResultAndNotVoted = CandidateResult.createNoVoteCandidate(candidateResults);
+	    					final CandidateResult[] candidatesAndNotVoted = candidateResults.toArray(new CandidateResult[candidateResults.size() + 1]);
+	    					candidatesAndNotVoted[candidateResults.size()] = candidateResultAndNotVoted;
+	    					return new CandidateResults(candidatesAndNotVoted);
 	    				}
 	    			)
 	    		);
@@ -119,24 +118,6 @@ public class UkParliamentElectionData {
 		}
 		return electorateSizeData;
 	}
-
-    private static String toPartyCode(String partyIdentifier) {
-		return switch (partyIdentifier) {
-			case "Speaker" -> "SPK";
-			case "Conservative" -> "CON";
-			case "Labour" -> "LAB";
-			case "Liberal Democrats" -> "LD";
-			case "Green Party" -> "GREEN";
-			case "Plaid Cymru" -> "PC";
-			case "Sinn Féin" -> "SF";
-			case "ED", "EDP" -> "ENG DEM";
-			case "Independent", "Ashfield" -> "IND"; // Ashfield Independents Putting People Before Politics
-			case "PBP Alliance" -> "PBPA";
-			case "AGS" -> "GREEN SOC";
-			case "NHAP" -> "NATIONAL HEALTH ACTION PARTY";
-			default -> partyIdentifier;
-		};
-    }
 
 	private static String toKey(String constituencyName) {
         return constituencyName.toLowerCase();

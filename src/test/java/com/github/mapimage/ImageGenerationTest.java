@@ -14,40 +14,40 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.github.mapimage.domain.Candidate;
-import com.github.mapimage.domain.Candidates;
+import com.github.mapimage.domain.CandidateResult;
+import com.github.mapimage.domain.CandidateResults;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.github.mapimage.imagegeneration.ConstituencyVoteDistributionImageGeneratorExact;
+import com.github.mapimage.imagegeneration.ConstituencyVoteDistributionImageGenerator;
 import com.github.mapimage.imagegeneration.ImageGenerator;
 
 public class ImageGenerationTest {
 
-	private static final Candidate CANDIDATE_CON = new Candidate(Color.BLUE, 30);
-	private static final Candidate CANDIDATE_LAB = new Candidate(Color.RED, 20);
-	private static final Candidate CANDIDATE_SNP = new Candidate(Color.YELLOW, 10);
-	private static final Candidate CANDIDATE_OTHER = new Candidate(Color.WHITE, 5);
+	private static final CandidateResult CANDIDATE_RESULT_CON = new CandidateResult(Color.BLUE, 30);
+	private static final CandidateResult CANDIDATE_RESULT_LAB = new CandidateResult(Color.RED, 20);
+	private static final CandidateResult CANDIDATE_RESULT_SNP = new CandidateResult(Color.YELLOW, 10);
+	private static final CandidateResult CANDIDATE_RESULT_OTHER = new CandidateResult(Color.WHITE, 5);
 
-	private static Candidates candidates;
-	private static Candidate noVoteCandidate;
+	private static CandidateResults candidates;
+	private static CandidateResult noVoteCandidateResult;
 	
 	private WritableRaster raster;
 	private ImageGenerator imageGenerator;
 	
 	@BeforeAll
 	public static void setUpBeforeClass() {
-		List<Candidate> candidateList = new ArrayList<>( asList(CANDIDATE_CON, CANDIDATE_LAB, CANDIDATE_SNP, CANDIDATE_OTHER) );
-		noVoteCandidate = Candidate.createNoVoteCandidate(candidateList);
-		candidateList.add(noVoteCandidate);
-		candidates = new Candidates( candidateList.toArray( new Candidate[candidateList.size()] ) );
+		List<CandidateResult> candidateResultList = new ArrayList<>( asList(CANDIDATE_RESULT_CON, CANDIDATE_RESULT_LAB, CANDIDATE_RESULT_SNP, CANDIDATE_RESULT_OTHER) );
+		noVoteCandidateResult = CandidateResult.createNoVoteCandidate(candidateResultList);
+		candidateResultList.add(noVoteCandidateResult);
+		candidates = new CandidateResults( candidateResultList.toArray( new CandidateResult[candidateResultList.size()] ) );
 	}
 
 	@BeforeEach
 	public void setUp() {
 		raster = new BufferedImage(200, 500, BufferedImage.TYPE_INT_ARGB).getRaster();
-		imageGenerator = new ConstituencyVoteDistributionImageGeneratorExact(candidates);
+		imageGenerator = new ConstituencyVoteDistributionImageGenerator(candidates);
 	}
 
 	@Test
@@ -58,13 +58,13 @@ public class ImageGenerationTest {
 	@Test
 	public void testNoVoteCandidatePercentageCalculation() {
 		int noVotePercentage = 100;
-		for (Candidate candidate : candidates.getCandidates()) {
-			if(candidate != noVoteCandidate) {
-				noVotePercentage -= candidate.getPercentageOfTotalElectorate();
+		for (CandidateResult candidateResult : candidates.getCandidateResults()) {
+			if(candidateResult != noVoteCandidateResult) {
+				noVotePercentage -= candidateResult.getPercentageOfTotalElectorate();
 			}
 		}
 		
-		assertEquals(noVoteCandidate.getPercentageOfTotalElectorate(), noVotePercentage);
+		assertEquals(noVoteCandidateResult.getPercentageOfTotalElectorate(), noVotePercentage);
 	}
 	
 	@Test
@@ -91,11 +91,11 @@ public class ImageGenerationTest {
 			}
 		}
 
-		for (Candidate candidate : candidates.getCandidates()) {
-			AtomicInteger pixelColorCount = pixelColorCountMap.remove( candidate.getColor() );
-			assertNotNull(pixelColorCount, "Can't find pixelColorCount in map [candidate=" + candidate + ", pixelColorCountMap=" + pixelColorCountMap + "]");
+		for (CandidateResult candidateResult : candidates.getCandidateResults()) {
+			AtomicInteger pixelColorCount = pixelColorCountMap.remove( candidateResult.getColor() );
+			assertNotNull(pixelColorCount, "Can't find pixelColorCount in map [candidate=" + candidateResult + ", pixelColorCountMap=" + pixelColorCountMap + "]");
 			int actualPixelCount = (int) (pixelColorCount.get() / (double)pixelCount * 100);
-			assertEquals(actualPixelCount, candidate.getPercentageOfTotalElectorate(), "pixel percentage incorrect [candidate=" + candidate + "]");
+			assertEquals(actualPixelCount, candidateResult.getPercentageOfTotalElectorate(), "pixel percentage incorrect [candidate=" + candidateResult + "]");
 		}
 	}
 }

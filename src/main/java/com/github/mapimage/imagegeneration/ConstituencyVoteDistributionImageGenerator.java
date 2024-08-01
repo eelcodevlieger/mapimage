@@ -3,8 +3,8 @@ package com.github.mapimage.imagegeneration;
 import java.awt.Color;
 import java.awt.image.WritableRaster;
 
-import com.github.mapimage.domain.Candidate;
-import com.github.mapimage.domain.Candidates;
+import com.github.mapimage.domain.CandidateResult;
+import com.github.mapimage.domain.CandidateResults;
 import com.github.mapimage.utils.CollectionUtils;
 import lombok.AllArgsConstructor;
 
@@ -14,9 +14,9 @@ import lombok.AllArgsConstructor;
  * For each party percentage add a party colour pixel, then shuffle the resulting pixels.
  */
 @AllArgsConstructor
-public class ConstituencyVoteDistributionImageGeneratorExact implements ImageGenerator {
+public class ConstituencyVoteDistributionImageGenerator implements ImageGenerator {
 
-	private final Candidates candidates;
+	private final CandidateResults candidates;
 
 	@Override
 	public void generate(WritableRaster raster) {
@@ -26,7 +26,7 @@ public class ConstituencyVoteDistributionImageGeneratorExact implements ImageGen
 		if(width * height % 100 != 0)
 			throw new IllegalStateException("Currently restricting pixel count to multiples of 100 (representing vote percentage)");
 		
-		float[][] pixels = getVoteDistributionPixels(width, height, candidates.getCandidatesExpanded());
+		float[][] pixels = getVoteDistributionPixels(width, height, candidates.getCandidateResultsExpanded());
 		CollectionUtils.shuffle(pixels); // make the distribution more realistic by shuffling the pixel locations
 
 		for (int x = 0; x < width; x++) {
@@ -37,7 +37,7 @@ public class ConstituencyVoteDistributionImageGeneratorExact implements ImageGen
 		}
 	}
 
-	private float[][] getVoteDistributionPixels(int width, int height, Candidate[] candidatesExpanded) {
+	private float[][] getVoteDistributionPixels(int width, int height, CandidateResult[] candidatesExpanded) {
 		float[][] pixels = new float[width * height][];
 
 		for (int x = 0; x < width; x++) {
@@ -50,8 +50,8 @@ public class ConstituencyVoteDistributionImageGeneratorExact implements ImageGen
 		return pixels;
 	}
 
-	private float[] getPixel(Candidate party) {
-		Color color = party.getColor();
+	private float[] getPixel(CandidateResult party) {
+		Color color = party.getPartyColor();
 		return new float[]{color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()};
 	}
 }
