@@ -8,14 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.github.mapimage.domain.CandidateResult;
 import com.github.mapimage.domain.CandidateResults;
+import com.github.mapimage.domain.Party;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,10 +23,10 @@ import com.github.mapimage.imagegeneration.ImageGenerator;
 
 public class ImageGenerationTest {
 
-	private static final CandidateResult CANDIDATE_RESULT_CON = new CandidateResult(Color.BLUE, 30);
-	private static final CandidateResult CANDIDATE_RESULT_LAB = new CandidateResult(Color.RED, 20);
-	private static final CandidateResult CANDIDATE_RESULT_SNP = new CandidateResult(Color.YELLOW, 10);
-	private static final CandidateResult CANDIDATE_RESULT_OTHER = new CandidateResult(Color.WHITE, 5);
+	private static final CandidateResult CANDIDATE_RESULT_CON = new CandidateResult(Party.CONSERVATIVE_PARTY_UK, 30);
+	private static final CandidateResult CANDIDATE_RESULT_LAB = new CandidateResult(Party.LABOUR_PARTY_UK, 20);
+	private static final CandidateResult CANDIDATE_RESULT_SNP = new CandidateResult(Party.SCOTTISH_NATIONAL_PARTY, 10);
+	private static final CandidateResult CANDIDATE_RESULT_OTHER = new CandidateResult(Party.OTHER, 5);
 
 	private static CandidateResults candidates;
 	private static CandidateResult noVoteCandidateResult;
@@ -52,7 +50,7 @@ public class ImageGenerationTest {
 
 	@Test
 	public void testImagePixelCountNotMultipleOfHundred() {
-		assertThrows(IllegalStateException.class, () -> imageGenerator.generate( new BufferedImage(10, 5, BufferedImage.TYPE_INT_ARGB).getRaster() ));
+		assertThrows(IllegalStateException.class, () -> imageGenerator.generate( new BufferedImage(10, 5, BufferedImage.TYPE_INT_ARGB).getRaster(), Collections.emptySet() ));
 	}
 	
 	@Test
@@ -69,7 +67,7 @@ public class ImageGenerationTest {
 	
 	@Test
 	public void testGenerateImagePixelPercentageAccurate() {
-		imageGenerator.generate(raster);
+		imageGenerator.generate(raster, Collections.emptySet());
 
 		int width = raster.getWidth();
 		int height = raster.getHeight();
@@ -92,7 +90,7 @@ public class ImageGenerationTest {
 		}
 
 		for (CandidateResult candidateResult : candidates.getCandidateResults()) {
-			AtomicInteger pixelColorCount = pixelColorCountMap.remove( candidateResult.getPartyColor() );
+			AtomicInteger pixelColorCount = pixelColorCountMap.remove( candidateResult.getParty().color );
 			assertNotNull(pixelColorCount, "Can't find pixelColorCount in map [candidate=" + candidateResult + ", pixelColorCountMap=" + pixelColorCountMap + "]");
 			int actualPixelCount = (int) (pixelColorCount.get() / (double)pixelCount * 100);
 			assertEquals(actualPixelCount, candidateResult.getPercentageOfTotalElectorate(), "pixel percentage incorrect [candidate=" + candidateResult + "]");

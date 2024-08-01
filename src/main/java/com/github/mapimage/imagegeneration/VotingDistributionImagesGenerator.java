@@ -2,6 +2,7 @@ package com.github.mapimage.imagegeneration;
 
 import com.github.mapimage.domain.CandidateResults;
 import com.github.mapimage.domain.ElectionData;
+import com.github.mapimage.domain.Party;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -9,6 +10,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,7 +29,7 @@ public class VotingDistributionImagesGenerator {
     private final int imageWidth;
     private final int imageHeight;
 
-    public Map<String, BufferedImage> generateImages(final ElectionData electionData) throws InterruptedException {
+    public Map<String, BufferedImage> generateImages(final ElectionData electionData, final Set<Party> partyFilter) throws InterruptedException {
         final Map<String, CandidateResults> constituencyNameToPartyCandidates = electionData.electionYearDataSource().getElectionDataLoader().load();
         final ExecutorService imageGenerationThreadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         final long startTime = System.currentTimeMillis();
@@ -49,7 +51,7 @@ public class VotingDistributionImagesGenerator {
             imageGenerationThreadPool.execute( () -> {
                 final String constituencyName = entry.getKey();
                 log.debug("Generate image [constituencyName={}]", constituencyName);
-                final BufferedImage image = generateImage( new ConstituencyVoteDistributionImageGenerator( entry.getValue() ) );
+                final BufferedImage image = generateImage( new ConstituencyVoteDistributionImageGenerator( entry.getValue() ), partyFilter);
                 final File outputImagePath = new File(mapImageDir, electionData.constituencyKeyGenerator().toKey(constituencyName) + "." + targetOutputImageFormat);
                 try {
                     ImageIO.write(image, targetOutputImageFormat, outputImagePath);
@@ -72,9 +74,9 @@ public class VotingDistributionImagesGenerator {
         return images;
     }
 
-    private BufferedImage generateImage(final ImageGenerator imageGenerator) {
+    private BufferedImage generateImage(final ImageGenerator imageGenerator, final Set<Party> partyFilter) {
         final BufferedImage image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
-        imageGenerator.generate( image.getRaster() );
+        imageGenerator.generate(image.getRaster(), partyFilter);
         return image;
     }
 }
