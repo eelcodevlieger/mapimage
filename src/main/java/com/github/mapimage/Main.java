@@ -1,10 +1,10 @@
 package com.github.mapimage;
 
 import com.github.mapimage.config.Config;
-import com.github.mapimage.data.PartyColorMapping;
 import com.github.mapimage.domain.ConstituencyMapping;
 import com.github.mapimage.domain.ElectionData;
 import com.github.mapimage.data.ElectionYearDataSource;
+import com.github.mapimage.domain.Party;
 import com.github.mapimage.imagegeneration.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.batik.ext.awt.image.spi.ImageTagRegistry;
@@ -65,6 +65,8 @@ public class Main {
 		var electionYearDataSources = ElectionYearDataSource.getElectionYearDataSources(args);
 		log.info("Processing [electionYearDataSources={}]", Arrays.toString(electionYearDataSources));
 
+		Party green = Party.GREEN_PARTY_UK;
+
 		// workaround: add Batik support for Base64 encoded embedded images
 		ImageTagRegistry.getRegistry().register(new Base64ImageUrlRegistryEntry());
 
@@ -100,8 +102,7 @@ public class Main {
 		var constituencyNameMapping = loadStringMapFromJsonFile( new File(RESOURCES_DIRECTORY, CONSTITUENCY_NAME_MAPPING_FILE) );
 		var seatNumberToConstituencyNameMapping = loadStringMapFromJsonFile( new File(RESOURCES_DIRECTORY, SEAT_TO_CONSTITUENCY_NAME_MAPPING_FILE) );
 		var constituencyMapping = new ConstituencyMapping(PREFIXES, constituencyNameMapping, seatNumberToConstituencyNameMapping);
-		var partyColorMapping = PartyColorMapping.getPartyColorMapping(electionYearDataSource);
 		var svgMapInputFile = CONFIG.getSvgMapInputFileName(electionYearDataSource.getElectionYear().getYear());
-		return new ElectionData(electionYearDataSource, partyColorMapping, svgMapInputFile, constituencyMapping);
+		return new ElectionData(electionYearDataSource, svgMapInputFile, constituencyMapping);
 	}
 }

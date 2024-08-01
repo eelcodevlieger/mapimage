@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.github.mapimage.data.ElectionYearDataSource;
+import com.github.mapimage.domain.CandidateResult;
+import com.github.mapimage.domain.Party;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -15,8 +17,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 
-import com.github.mapimage.domain.Candidate;
-import com.github.mapimage.domain.Candidates;
+import com.github.mapimage.domain.CandidateResults;
 
 import static com.github.mapimage.Main.CONFIG;
 
@@ -27,12 +28,11 @@ import static com.github.mapimage.Main.CONFIG;
 @Slf4j
 public class ElectoralCommissionElectionData {
 
-	public static Map<String, Candidates> loadElectionData(final ElectionYearDataSource electionYearDataSource,
-														   final String inputDataFile,
-														   final Map<String, String> partyColorMapping,
-														   final boolean blankResultsOnConstituencyRow,
-														   int numInitialRowsToSkip) throws Exception {
-	    Map<String, Candidates> electionDataMap = new HashMap<>();
+	public static Map<String, CandidateResults> loadElectionData(final ElectionYearDataSource electionYearDataSource,
+																 final String inputDataFile,
+																 final boolean blankResultsOnConstituencyRow,
+																 int numInitialRowsToSkip) throws Exception {
+	    Map<String, CandidateResults> electionDataMap = new HashMap<>();
 
         Workbook workBook;
         try(InputStream inputStream = new FileInputStream(CONFIG.getElectionYearDataSourceResourcePath(electionYearDataSource) + inputDataFile)){
@@ -44,7 +44,7 @@ public class ElectoralCommissionElectionData {
 	    boolean isTurnoutRow = true;
 	    String constituencyName = "";
 	    double turnout = 0.0d;
-	    List<Candidate> candidates = new ArrayList<>();
+	    List<CandidateResult> candidateResults = new ArrayList<>();
 	    for (Row row : sheet) {
 	    	
 	    	// ignore header
@@ -84,14 +84,14 @@ public class ElectoralCommissionElectionData {
 	    	
 			String partyCode = partyCodeCell.getRichStringCellValue().getString();
 	    	if(partyCode == null || partyCode.trim().isEmpty()){
-                log.debug("constituency election result [constituencyName={}, turnout={}, candidates={}]", constituencyName, turnout, candidates);
-	    		candidates.add( Candidate.createNoVoteCandidate(candidates) );
-	    		electionDataMap.put(constituencyName, new Candidates( candidates.toArray( new Candidate[candidates.size()] ) ) );
+                log.debug("constituency election result [constituencyName={}, turnout={}, candidates={}]", constituencyName, turnout, candidateResults);
+	    		candidateResults.add( CandidateResult.createNoVoteCandidate(candidateResults) );
+	    		electionDataMap.put(constituencyName, new CandidateResults( candidateResults.toArray( new CandidateResult[candidateResults.size()] ) ) );
 	    		
 	    		// reset flags for next iteration
 	    		isConstituencyRow = true;
 	    		isTurnoutRow = true;
-	    		candidates.clear();
+	    		candidateResults.clear();
 	    		
 	    		continue;
 	    	}
@@ -102,8 +102,9 @@ public class ElectoralCommissionElectionData {
 	    	if(turnout < 0.1d) {
 				throw new IllegalStateException("Turnout percentage invalid [turnout=" + turnout + "]");
 			}
-	    	
-			candidates.add( new Candidate(partyColorMapping, partyCode, (int)(voteShare / 100 * turnout) ) );
+
+			final int percentage = (int) (voteShare / 100 * turnout);
+			candidateResults.add( new CandidateResult(Party.getByAbbreviation(partyCode, percentage), percentage) );
 	    }
 	    
 	    return electionDataMap;

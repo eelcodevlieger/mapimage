@@ -1,6 +1,6 @@
 package com.github.mapimage.imagegeneration;
 
-import com.github.mapimage.domain.Candidates;
+import com.github.mapimage.domain.CandidateResults;
 import com.github.mapimage.domain.ElectionData;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +28,7 @@ public class VotingDistributionImagesGenerator {
     private final int imageHeight;
 
     public Map<String, BufferedImage> generateImages(final ElectionData electionData) throws InterruptedException {
-        final Map<String, Candidates> constituencyNameToPartyCandidates = electionData.electionYearDataSource().getElectionDataLoader().apply(electionData.partyColorMapping());
+        final Map<String, CandidateResults> constituencyNameToPartyCandidates = electionData.electionYearDataSource().getElectionDataLoader().load();
         final ExecutorService imageGenerationThreadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         final long startTime = System.currentTimeMillis();
 
@@ -45,11 +45,11 @@ public class VotingDistributionImagesGenerator {
         }
 
         log.info("Generate fill pattern images for constituency");
-        for (Map.Entry<String, Candidates> entry : constituencyNameToPartyCandidates.entrySet()) {
+        for (Map.Entry<String, CandidateResults> entry : constituencyNameToPartyCandidates.entrySet()) {
             imageGenerationThreadPool.execute( () -> {
                 final String constituencyName = entry.getKey();
                 log.debug("Generate image [constituencyName={}]", constituencyName);
-                final BufferedImage image = generateImage( new ConstituencyVoteDistributionImageGeneratorExact( entry.getValue() ) );
+                final BufferedImage image = generateImage( new ConstituencyVoteDistributionImageGenerator( entry.getValue() ) );
                 final File outputImagePath = new File(mapImageDir, electionData.constituencyKeyGenerator().toKey(constituencyName) + "." + targetOutputImageFormat);
                 try {
                     ImageIO.write(image, targetOutputImageFormat, outputImagePath);

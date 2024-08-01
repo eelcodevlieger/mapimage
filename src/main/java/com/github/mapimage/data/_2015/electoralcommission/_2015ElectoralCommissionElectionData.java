@@ -11,6 +11,8 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import com.github.mapimage.data.ElectionDataLoader;
+import com.github.mapimage.domain.CandidateResult;
+import com.github.mapimage.domain.Party;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Row;
@@ -22,8 +24,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ListMultimap;
-import com.github.mapimage.domain.Candidate;
-import com.github.mapimage.domain.Candidates;
+import com.github.mapimage.domain.CandidateResults;
 
 import static com.github.mapimage.Main.CONFIG;
 import static com.github.mapimage.data.ElectionYearDataSource._2015ElectoralCommission;
@@ -34,14 +35,14 @@ public class _2015ElectoralCommissionElectionData implements ElectionDataLoader 
 	private static final String INPUT_DATA_FILE = "2015-UK-general-election-data-results-WEB.xlsx";
 	
 	@SneakyThrows
-	public Map<String, Candidates> apply(final Map<String, String> partyColorMapping){
+	public Map<String, CandidateResults> load(){
 		final Workbook workBook;
 		try(InputStream inputStream = new FileInputStream(CONFIG.getElectionYearDataSourceResourcePath(_2015ElectoralCommission) + INPUT_DATA_FILE)){
 			workBook = WorkbookFactory.create(inputStream);
 		}
 		
 		final Map<String, Double> turnoutData = loadTurnoutData(workBook);
-		return loadElectionData(workBook, partyColorMapping, turnoutData);
+		return loadElectionData(workBook, turnoutData);
 	}
 
 	private static Map<String, Double> loadTurnoutData(final Workbook workBook) {
@@ -68,9 +69,9 @@ public class _2015ElectoralCommissionElectionData implements ElectionDataLoader 
 		return turnoutData;
 	}
 
-	private static Map<String, Candidates> loadElectionData(final Workbook workBook, final Map<String, String> partyColorMapping, final Map<String, Double> turnoutData) {
+	private static Map<String, CandidateResults> loadElectionData(final Workbook workBook, final Map<String, Double> turnoutData) {
 
-		final ListMultimap<String, Candidate> electionDataMap = ArrayListMultimap.create();
+		final ListMultimap<String, CandidateResult> electionDataMap = ArrayListMultimap.create();
 
 	    final Sheet candidatesSheet = workBook.getSheet("Candidates");
 	    
@@ -96,7 +97,8 @@ public class _2015ElectoralCommissionElectionData implements ElectionDataLoader 
                 log.error("No turnout data found [constituencyName={}]", constituencyName);
 				continue;
 			}
-			electionDataMap.put(constituencyName, new Candidate(partyColorMapping, partyCode, (int)Math.round( voteShare / 100 * turnout )));
+			final int percentage = (int) Math.round(voteShare / 100 * turnout);
+			electionDataMap.put(constituencyName, new CandidateResult(Party.getByAbbreviation(partyCode, percentage), percentage));
 	    }
 	    
 	    return electionDataMap.asMap()
@@ -105,11 +107,11 @@ public class _2015ElectoralCommissionElectionData implements ElectionDataLoader 
 	    		.collect(Collectors.toMap(Entry::getKey,
 	    				entry -> {
 
-	    					final Collection<Candidate> candidates = entry.getValue();
-	    					final Candidate candidateAndNotVoted = Candidate.createNoVoteCandidate(candidates);
-	    					final Candidate[] candidatesAndNotVoted = candidates.toArray(new Candidate[candidates.size() + 1]);
-	    					candidatesAndNotVoted[candidates.size()] = candidateAndNotVoted;
-	    					return new Candidates(candidatesAndNotVoted);
+	    					final Collection<CandidateResult> candidateResults = entry.getValue();
+	    					final CandidateResult candidateResultAndNotVoted = CandidateResult.createNoVoteCandidate(candidateResults);
+	    					final CandidateResult[] candidatesAndNotVoted = candidateResults.toArray(new CandidateResult[candidateResults.size() + 1]);
+	    					candidatesAndNotVoted[candidateResults.size()] = candidateResultAndNotVoted;
+	    					return new CandidateResults(candidatesAndNotVoted);
 	    				}
 	    			)
 	    		);
