@@ -2,9 +2,11 @@ package com.github.mapimage.imagegeneration;
 
 import java.awt.Color;
 import java.awt.image.WritableRaster;
+import java.util.Set;
 
 import com.github.mapimage.domain.CandidateResult;
 import com.github.mapimage.domain.CandidateResults;
+import com.github.mapimage.domain.Party;
 import com.github.mapimage.utils.CollectionUtils;
 import lombok.AllArgsConstructor;
 
@@ -19,14 +21,15 @@ public class ConstituencyVoteDistributionImageGenerator implements ImageGenerato
 	private final CandidateResults candidates;
 
 	@Override
-	public void generate(WritableRaster raster) {
-		int width = raster.getWidth();
-		int height = raster.getHeight();
+	public void generate(final WritableRaster raster, final Set<Party> partyFilter) {
+		final int width = raster.getWidth();
+		final int height = raster.getHeight();
 		
-		if(width * height % 100 != 0)
+		if(width * height % 100 != 0) {
 			throw new IllegalStateException("Currently restricting pixel count to multiples of 100 (representing vote percentage)");
+		}
 		
-		float[][] pixels = getVoteDistributionPixels(width, height, candidates.getCandidateResultsExpanded());
+		final float[][] pixels = getVoteDistributionPixels(width, height, candidates.getCandidateResultsExpanded(), partyFilter);
 		CollectionUtils.shuffle(pixels); // make the distribution more realistic by shuffling the pixel locations
 
 		for (int x = 0; x < width; x++) {
@@ -37,21 +40,30 @@ public class ConstituencyVoteDistributionImageGenerator implements ImageGenerato
 		}
 	}
 
-	private float[][] getVoteDistributionPixels(int width, int height, CandidateResult[] candidatesExpanded) {
-		float[][] pixels = new float[width * height][];
+	private float[][] getVoteDistributionPixels(final int width, final int height, final CandidateResult[] candidatesExpanded, final Set<Party> partyFilter) {
+		final float[][] pixels = new float[width * height][];
 
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
-				int pixelIndex = x * height + y;
-				pixels[pixelIndex] = getPixel( candidatesExpanded[pixelIndex % 100] );
+				final int pixelIndex = x * height + y;
+				final CandidateResult candidateResult = candidatesExpanded[pixelIndex % 100];
+
+				final float[] pixel = partyFilter.isEmpty() || partyFilter.contains(candidateResult.getParty()) ?
+						getPixel(candidateResult) : getColorComponentsRGBA(Color.WHITE);
+
+				pixels[pixelIndex] = pixel;
 			}	
 		}
 		
 		return pixels;
 	}
 
-	private float[] getPixel(CandidateResult party) {
-		Color color = party.getPartyColor();
+	private float[] getPixel(final CandidateResult candidateResult) {
+		var color = candidateResult.getParty().color;
+		return getColorComponentsRGBA(color);
+	}
+
+	private static float[] getColorComponentsRGBA(final Color color) {
 		return new float[]{color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()};
 	}
 }

@@ -13,6 +13,7 @@ import org.apache.logging.log4j.ThreadContext;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 
 import static com.github.mapimage.utils.JsonUtils.loadStringMapFromJsonFile;
 import static com.github.mapimage.utils.XmlUtils.writeXmlDocumentToFile;
@@ -65,7 +66,7 @@ public class Main {
 		var electionYearDataSources = ElectionYearDataSource.getElectionYearDataSources(args);
 		log.info("Processing [electionYearDataSources={}]", Arrays.toString(electionYearDataSources));
 
-		Party green = Party.GREEN_PARTY_UK;
+		var partyCodes = new String[]{null, "CON", "LAB", "LD", "RUK", "GRN", "SNP", "SF", "DUP", "PC"};
 
 		// workaround: add Batik support for Base64 encoded embedded images
 		ImageTagRegistry.getRegistry().register(new Base64ImageUrlRegistryEntry());
@@ -73,26 +74,35 @@ public class Main {
 		for(ElectionYearDataSource electionYearDataSource : electionYearDataSources) {
 			ThreadContext.put("mdc.electionYearDataSource", electionYearDataSource.name());
 
+
 			var electionDataSourceConfig = CONFIG.get(electionYearDataSource);
 
 			log.info("Loading election data [electionYearDataSource={}]", electionYearDataSource);
 			var electionData = getElectionData(electionYearDataSource);
 
-            log.info("Generate a 'voting distribution' image for each constituency [electionYearDataSource={}]", electionYearDataSource);
-			var votingDistributionImagesGenerator = new VotingDistributionImagesGenerator(TARGET_OUTPUT_BASE_DIR, TARGET_OUTPUT_IMAGE_DIR, TARGET_OUTPUT_IMAGE_FORMAT, IMAGE_WIDTH, IMAGE_HEIGHT);
-			var patternImages = votingDistributionImagesGenerator.generateImages(electionData);
+			for (var partyCode : partyCodes) {
+				ThreadContext.put("mdc.partyFilter", partyCode);
+				var party = Party.getByAbbreviation(partyCode);
+				var dirPrefix = partyCode != null ? partyCode + "\\" : "";
 
-            log.info("Update SVG map image and save the resulting file [electionYearDataSource={}]", electionYearDataSource);
-			var votingDistributionMapGenerator = new VotingDistributionMapGenerator(TARGET_OUTPUT_IMAGE_DIR, TARGET_OUTPUT_IMAGE_FORMAT, IMAGE_WIDTH, IMAGE_HEIGHT, EMBED_IMAGE_IN_SVG);
-			var votingDistributionMap = votingDistributionMapGenerator.generate(patternImages, electionData);;
+				log.info("\tGenerate a 'voting distribution' image for each constituency [electionYearDataSource={}, partyCodeFilter={}]", electionYearDataSource, partyCode);
+				var votingDistributionImagesGenerator = new VotingDistributionImagesGenerator(TARGET_OUTPUT_BASE_DIR + dirPrefix, TARGET_OUTPUT_IMAGE_DIR, TARGET_OUTPUT_IMAGE_FORMAT, IMAGE_WIDTH, IMAGE_HEIGHT);
+				var patternImages = votingDistributionImagesGenerator.generateImages(electionData, party != null ? Collections.singleton(party) : Collections.emptySet());
 
-			log.info("Save generated voting distribution map to SVG file");
-			var svgOutputFile = new File(TARGET_OUTPUT_BASE_DIR + electionYearDataSource + "_" + SVG_MAP_OUTPUT_FILE);
-			writeXmlDocumentToFile(votingDistributionMap, svgOutputFile);
+				log.info("\tUpdate SVG map image and save the resulting file [electionYearDataSource={}]", electionYearDataSource);
+				var votingDistributionMapGenerator = new VotingDistributionMapGenerator(TARGET_OUTPUT_IMAGE_DIR + dirPrefix, TARGET_OUTPUT_IMAGE_FORMAT, IMAGE_WIDTH, IMAGE_HEIGHT, EMBED_IMAGE_IN_SVG);
+				var votingDistributionMap = votingDistributionMapGenerator.generate(patternImages, electionData);
 
-			log.info("Save generated voting distribution map to PNG file");
-			var svgToPngTransCoder = new SvgToPngTranscoder();
-			svgToPngTransCoder.transcode(svgOutputFile, TARGET_OUTPUT_BASE_DIR + electionYearDataSource + "_" + PNG_MAP_OUTPUT_FILE, OUTPUT_HEIGHT_PX);
+				log.info("\tSave generated voting distribution map to SVG file");
+				var svgOutputFile = new File(TARGET_OUTPUT_BASE_DIR + (partyCode != null ? partyCode + "_" : "") + electionYearDataSource + "_" + SVG_MAP_OUTPUT_FILE);
+				writeXmlDocumentToFile(votingDistributionMap, svgOutputFile);
+
+				log.info("\tSave generated voting distribution map to PNG file");
+				var svgToPngTransCoder = new SvgToPngTranscoder();
+				svgToPngTransCoder.transcode(svgOutputFile, TARGET_OUTPUT_BASE_DIR + (partyCode != null ? partyCode + "_" : "") + electionYearDataSource + "_" + PNG_MAP_OUTPUT_FILE, OUTPUT_HEIGHT_PX);
+			}
+
+			ThreadContext.put("mdc.partyFilter", "");
 		}
 		
 		log.info("Completed");

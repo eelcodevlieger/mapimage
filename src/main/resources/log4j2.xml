@@ -2,7 +2,7 @@
 <Configuration status="ERROR">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%X{mdc.electionYearDataSource}] %-5level %c{1.} - %msg%n"/>
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%X{mdc.electionYearDataSource} %X{mdc.partyFilter}] %-5level %c{1.} - %msg%n"/>
         </Console>
     </Appenders>
     <Loggers>

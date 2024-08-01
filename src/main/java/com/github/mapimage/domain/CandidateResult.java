@@ -11,17 +11,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CandidateResult {
 
-	private final Color partyColor;
 	private final int percentageOfTotalElectorate;
+	private final Party party;
 
-	public CandidateResult(final Color color, final int percentageOfTotalElectorate) {
-		this.partyColor = color;
+	public CandidateResult(final Party party, final int percentageOfTotalElectorate) {
 		this.percentageOfTotalElectorate = percentageOfTotalElectorate;
+		this.party = party;
 		Preconditions.checkArgument(percentageOfTotalElectorate >= 0 && percentageOfTotalElectorate <= 100, "percentageOfTotalElectorate should be in range 0 to 100 [percentageOfTotalElectorate=" + percentageOfTotalElectorate + "]");
-	}
-
-	public CandidateResult(final Party party, final int percentage) {
-		this(party.color, percentage);
 	}
 
 	/**
@@ -34,11 +30,11 @@ public class CandidateResult {
 				.map(CandidateResult::getPercentageOfTotalElectorate)
 				.mapToInt(Integer::intValue)
 				.sum();
-		return new CandidateResult(Party.NO_VOTE.color, 100 - totalPercentage);
+		return new CandidateResult(Party.NO_VOTE, 100 - totalPercentage);
 	}
 	
 	@Override
 	public String toString() {
-		return "Candidate [partyColor=" + partyColor + ", percentageOfTotalElectorate=" + percentageOfTotalElectorate + "]";
+		return "Candidate [party=" + party + ", percentageOfTotalElectorate=" + percentageOfTotalElectorate + "]";
 	}
 }

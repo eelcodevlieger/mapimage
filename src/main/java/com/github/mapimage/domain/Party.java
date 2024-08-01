@@ -1,6 +1,7 @@
 package com.github.mapimage.domain;
 
 import lombok.SneakyThrows;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 import java.awt.*;
@@ -17,6 +18,7 @@ import java.util.List;
  *     =CONCAT(UPPER(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(E2, " ", "_"), "-", "_"), "'", ""), "&", "_AND_"), "(", ""), ")", "")),"(")
  * </pre>
  */
+@ToString
 @Slf4j
 public enum Party {
     ABOLISH_THE_SCOTTISH_PARLIAMENT_PARTY("#1D8DFF"),
@@ -392,6 +394,13 @@ public enum Party {
         }
 
         return (Color) Color.class.getDeclaredField(cssColor.toLowerCase()).get(null);
+    }
+
+    public static Party getByAbbreviation(final String abbreviation){
+        if(abbreviation == null){
+            return null;
+        }
+        return byAbbreviation.get(abbreviation.toUpperCase());
     }
 
     public static Party getByAbbreviation(final String abbreviation, final int percentage){
